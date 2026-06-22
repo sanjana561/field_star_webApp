@@ -6,6 +6,31 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TechnicianRepository {
   final _supabase = Supabase.instance.client;
+  
+Future<void> updateCustomer({
+  required dynamic id,
+  required String customerName,
+  required String phone,
+  required String hotelName,
+  required String location,
+}) async {
+  await _supabase
+      .from('customer')  
+      .update({
+        'cust_name': customerName,
+        'cust_phno': phone,
+        'cust_hotelname': hotelName,
+        'cust_location': location,
+      })
+      .eq('id', id);
+}
+
+Future<void> deleteCustomer({required dynamic id}) async {
+  await _supabase
+      .from('customer')   // ← replace with your table name
+      .delete()
+      .eq('id', id);
+}
 
   //============================insert technician===========================
   // Change the method signature to use TechModel
@@ -297,5 +322,6 @@ Future<Map<String, dynamic>> fetchDashboardStats(String technicianId) async {
     'completedTrend': completedTrend,
   };
 }
+
 }
 

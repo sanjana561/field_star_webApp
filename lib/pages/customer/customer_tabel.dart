@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 class CustomersTable extends StatefulWidget {
   final String searchQuery;
-
   const CustomersTable({super.key, this.searchQuery = ''});
 
   @override
@@ -14,6 +13,7 @@ class CustomersTable extends StatefulWidget {
 class _CustomersTableState extends State<CustomersTable> {
   final _repo = TechnicianRepository();
   late Future<List<CustomerModel>> _customerFuture;
+
   @override
   void initState() {
     super.initState();
@@ -28,17 +28,437 @@ class _CustomersTableState extends State<CustomersTable> {
 
   List<CustomerModel> _applySearch(List<CustomerModel> all) {
     if (widget.searchQuery.isEmpty) return all;
-
     final q = widget.searchQuery.toLowerCase();
-
-    return all.where((c) {
-      return c.customerName.toLowerCase().contains(q) ||
-          c.phone.toLowerCase().contains(q) ||
-          c.hotelName.toLowerCase().contains(q) ||
-          c.location.toLowerCase().contains(q);
-    }).toList();
+    return all
+        .where(
+          (c) =>
+              c.customerName.toLowerCase().contains(q) ||
+              c.phone.toLowerCase().contains(q) ||
+              c.hotelName.toLowerCase().contains(q) ||
+              c.location.toLowerCase().contains(q),
+        )
+        .toList();
   }
 
+  // ── Edit dialog ───────────────────────────────────────────────────────────
+  void _showEditDialog(BuildContext context, CustomerModel c) {
+    final nameCtrl = TextEditingController(text: c.customerName);
+    final phoneCtrl = TextEditingController(text: c.phone);
+    final hotelCtrl = TextEditingController(text: c.hotelName);
+    final locationCtrl = TextEditingController(text: c.location);
+    final formKey = GlobalKey<FormState>();
+    bool saving = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => Center(
+          child: SizedBox(
+            width: 600,
+            child: Dialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // title row
+                      Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.edit_outlined,
+                              size: 18,
+                              color: Color(0xFF3B82F6),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Edit Customer',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Color(0xFF94A3B8),
+                            ),
+                            onPressed: () => Navigator.pop(ctx),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      _editField(
+                        nameCtrl,
+                        'Customer Name',
+                        Icons.person_outline,
+                        'Enter name',
+                      ),
+                      const SizedBox(height: 14),
+                      _editField(
+                        phoneCtrl,
+                        'Phone',
+                        Icons.phone_outlined,
+                        'Enter phone',
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 14),
+                      _editField(
+                        hotelCtrl,
+                        'Hotel / Company',
+                        Icons.business_outlined,
+                        'Enter hotel name',
+                      ),
+                      const SizedBox(height: 14),
+                      _editField(
+                        locationCtrl,
+                        'Location',
+                        Icons.location_on_outlined,
+                        'Enter location',
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 200,
+                            child: OutlinedButton(
+                              onPressed: saving
+                                  ? null
+                                  : () => Navigator.pop(ctx),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                side: const BorderSide(
+                                  color: Color(0xFFE2E8F0),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 200,
+                            child: ElevatedButton(
+                              onPressed: saving
+                                  ? null
+                                  : () async {
+                                      if (!formKey.currentState!.validate())
+                                        return;
+                                      final nav = Navigator.of(context);
+                                      final messenger = ScaffoldMessenger.of(
+                                        context,
+                                      );
+
+                                      setLocal(() => saving = true);
+                                      try {
+                                        await _repo.updateCustomer(
+                                          id: c.id,
+                                          customerName: nameCtrl.text.trim(),
+                                          phone: phoneCtrl.text.trim(),
+                                          hotelName: hotelCtrl.text.trim(),
+                                          location: locationCtrl.text.trim(),
+                                        );
+                                        nav.pop();
+                                        await Future.delayed(Duration.zero);
+                                        _refresh();
+
+                                        messenger.showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Customer updated'),
+                                            backgroundColor: Color(0xFF22C55E),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      } catch (e) {
+                                        setLocal(() => saving = false);
+                                        messenger.showSnackBar(
+                                          SnackBar(
+                                            content: Text('Failed: $e'),
+                                            backgroundColor: const Color(
+                                              0xFFEF4444,
+                                            ),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF3B82F6),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: saving
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Save Changes',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Delete confirm dialog ─────────────────────────────────────────────────
+  void _showDeleteConfirm(BuildContext context, CustomerModel c) {
+    bool deleting = false;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline,
+                    size: 26,
+                    color: Color(0xFFEF4444),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Delete Customer',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Are you sure you want to delete "${c.customerName}"? This cannot be undone.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF64748B),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: deleting ? null : () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: deleting
+                            ? null
+                            : () async {
+                                final nav = Navigator.of(context);
+                                final messenger = ScaffoldMessenger.of(context);
+                                final name = c.customerName;
+                                setLocal(() => deleting = true);
+                                try {
+                                  await _repo.deleteCustomer(id: c.id);
+                                  nav.pop();
+                                  await Future.delayed(Duration.zero);
+                                  _refresh();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text('"$name" deleted'),
+                                      backgroundColor: const Color(0xFFEF4444),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                } catch (e) {
+                                  setLocal(() => deleting = false);
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text('Failed: $e'),
+                                      backgroundColor: const Color(0xFFEF4444),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEF4444),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: deleting
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Delete',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Field builder ─────────────────────────────────────────────────────────
+  Widget _editField(
+    TextEditingController ctrl,
+    String label,
+    IconData icon,
+    String hint, {
+    TextInputType keyboardType = TextInputType.text,
+  }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF475569),
+        ),
+      ),
+      const SizedBox(height: 6),
+      SizedBox(
+        width: 500,
+        child: TextFormField(
+          controller: ctrl,
+          keyboardType: keyboardType,
+          style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E1)),
+            prefixIcon: Icon(icon, size: 16, color: const Color(0xFF94A3B8)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: Color(0xFF3B82F6),
+                width: 1.5,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+
+  // ── build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<CustomerModel>>(
@@ -66,7 +486,7 @@ class _CustomersTableState extends State<CustomersTable> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Failed to load complaints\n${snapshot.error}',
+                    'Failed to load customers\n${snapshot.error}',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 13,
@@ -80,6 +500,7 @@ class _CustomersTableState extends State<CustomersTable> {
             ),
           );
         }
+
         final rows = _applySearch(snapshot.data ?? []);
         return Container(
           decoration: BoxDecoration(
@@ -90,7 +511,6 @@ class _CustomersTableState extends State<CustomersTable> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Container(
                 decoration: const BoxDecoration(
                   border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
@@ -120,7 +540,7 @@ class _CustomersTableState extends State<CustomersTable> {
                   ),
                 )
               else
-                ...rows.map(_buildRow),
+                ...rows.map((c) => _buildRow(context, c)),
             ],
           ),
         );
@@ -128,14 +548,11 @@ class _CustomersTableState extends State<CustomersTable> {
     );
   }
 
-  String getFirstLetter(CustomerModel c) {
-    if (c.customerName.trim().isEmpty) return '';
+  String _initial(CustomerModel c) => c.customerName.trim().isEmpty
+      ? '?'
+      : c.customerName.trim()[0].toUpperCase();
 
-    return c.customerName.trim().characters.first.toUpperCase();
-  }
-
-  Widget _buildRow(CustomerModel c) {
-    // Define standard text styles to keep heights consistent
+  Widget _buildRow(BuildContext context, CustomerModel c) {
     const primaryStyle = TextStyle(
       fontSize: 13,
       fontWeight: FontWeight.w600,
@@ -149,25 +566,23 @@ class _CustomersTableState extends State<CustomersTable> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.center, // Keeps items vertically centered
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Column 1: Customer (Flex 3)
+          // Customer
           Expanded(
             flex: 3,
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 18,
-                  backgroundColor: Colors.blue,
+                  backgroundColor: const Color(0xFF3B82F6),
                   child: Text(
-                    getFirstLetter(c),
+                    _initial(c),
                     style: const TextStyle(fontSize: 12, color: Colors.white),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  // Use Expanded instead of Flexible here to prevent overflow
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -187,8 +602,7 @@ class _CustomersTableState extends State<CustomersTable> {
               ],
             ),
           ),
-
-          // Column 2: Contact (Flex 2)
+          // Contact
           Expanded(
             flex: 2,
             child: Column(
@@ -199,8 +613,7 @@ class _CustomersTableState extends State<CustomersTable> {
               ],
             ),
           ),
-
-          // Column 3: Equipment (Flex 1.5)
+          // Equipment
           Expanded(
             flex: 2,
             child: Column(
@@ -218,39 +631,95 @@ class _CustomersTableState extends State<CustomersTable> {
               ],
             ),
           ),
-
-          // Column 4: Complaints (Flex 2)
+          // Complaints
           Expanded(
             flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${c.complaintCount} active',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: c.complaintCount > 0
-                        ? const Color(0xFFE8680A)
-                        : const Color(0xFF64748B),
+            child: Text(
+              '${c.complaintCount} active',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: c.complaintCount > 0
+                    ? const Color(0xFFE8680A)
+                    : const Color(0xFF64748B),
+              ),
+            ),
+          ),
+          // Actions — inline popup menu
+          Expanded(
+            flex: 2,
+            child: PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') _showEditDialog(context, c);
+                if (value == 'delete') _showDeleteConfirm(context, c);
+              },
+              color: Colors.white,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              offset: const Offset(-100, 10),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'edit',
+                  height: 42,
+                  child: Row(
+                    children: const [
+                      Icon(
+                        Icons.edit_outlined,
+                        size: 16,
+                        color: Color(0xFF3B82F6),
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        'Edit',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const PopupMenuDivider(height: 1),
+                PopupMenuItem(
+                  value: 'delete',
+                  height: 42,
+                  child: Row(
+                    children: const [
+                      Icon(
+                        Icons.delete_outline,
+                        size: 16,
+                        color: Color(0xFFEF4444),
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFFEF4444),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ),
-          ),
-
-          // Column 5: Actions (Flex 2)
-          Expanded(
-            flex: 2,
-            child: TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(50, 30),
-              ),
-              child: const Text(
-                'View',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Text(
+                    'View',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF3B82F6),
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                ],
               ),
             ),
           ),
@@ -265,15 +734,13 @@ class _HeaderCell extends StatelessWidget {
   const _HeaderCell(this.label);
 
   @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF94A3B8),
-        letterSpacing: 0.5,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Text(
+    label,
+    style: const TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF94A3B8),
+      letterSpacing: 0.5,
+    ),
+  );
 }
