@@ -8,23 +8,33 @@ class TechnicianRepository {
   final _supabase = Supabase.instance.client;
   
 Future<void> updateCustomer({
-  required dynamic id,
+  required String? id,
   required String customerName,
   required String phone,
   required String hotelName,
   required String location,
 }) async {
-  await _supabase
-      .from('customer')  
+  if (id == null || id.isEmpty) {
+    throw Exception('Customer id is null');
+  }
+
+  final response = await Supabase.instance.client
+      .from('customer')
       .update({
         'cust_name': customerName,
         'cust_phno': phone,
         'cust_hotelname': hotelName,
         'cust_location': location,
       })
-      .eq('id', id);
-}
+      .eq('id', id)
+      .select();
 
+  print('UPDATE RESPONSE: $response');
+
+  if (response.isEmpty) {
+    throw Exception('No row updated. Wrong id or RLS blocking.');
+  }
+}
 Future<void> deleteCustomer({required dynamic id}) async {
   await _supabase
       .from('customer')   // ← replace with your table name
@@ -164,24 +174,15 @@ Future<Map<String, dynamic>> getTechnicianStats() async {
   }
 
   //========================Fetch customer==========
-  Future<List<CustomerModel>> fetchcustomer() async {
-    try {
-      final customers = await _supabase
-          .from('customer')
-          .select('*, Raise_complaint(id)')
-          .order('created_at', ascending: false);
+ Future<List<CustomerModel>> fetchcustomer() async {
+  final response = await Supabase.instance.client
+      .from('customer')
+      .select('id, cust_name, cust_phno, cust_location, cust_place, cust_hotelname, total_equipment, revenue_ytd');
 
-      return (customers as List).map((json) {
-        final complaints = json['Raise_complaint'] as List? ?? [];
-        final enriched = Map<String, dynamic>.from(json);
-        enriched['complaint_count'] = complaints.length;
-        return CustomerModel.fromMap(enriched);
-      }).toList();
-    } catch (e) {
-      print('fetchcustomer error: $e');
-      rethrow;
-    }
-  }
+  return response.map<CustomerModel>((e) {
+    return CustomerModel.fromMap(e);
+  }).toList();
+}
 
   //=======================Updated technician=======================
   Future<void> updatetechnician(TechModel technician) async {

@@ -154,53 +154,45 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return  FutureBuilder<List<ComplaintModel>>(
-        future: _complaintsFuture,
-      builder: (context, snapshot) {
-        // Loading
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(40),
-              child: CircularProgressIndicator(),
+ @override
+Widget build(BuildContext context) {
+  return FutureBuilder<List<ComplaintModel>>(
+    future: _complaintsFuture,
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(40),
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      if (snapshot.hasError) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, color: Color(0xFFE05252), size: 32),
+                const SizedBox(height: 12),
+                Text(
+                  'Failed to load complaints\n${snapshot.error}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                ),
+                const SizedBox(height: 12),
+                TextButton(onPressed: _refresh, child: const Text('Retry')),
+              ],
             ),
-          );
-        }
+          ),
+        );
+      }
 
-        // Error
-        if (snapshot.hasError) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Color(0xFFE05252),
-                    size: 32,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Failed to load complaints\n${snapshot.error}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF94A3B8),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextButton(onPressed: _refresh, child: const Text('Retry')),
-                ],
-              ),
-            ),
-          );
-        }
+      final rows = _applySearch(snapshot.data ?? []);
 
-        final rows = _applySearch(snapshot.data ?? []);
-
-      return  Container(
+      return Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -209,160 +201,139 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Recent Complaints',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: widget.onViewAll,
-                    child: const Text(
-                      'View All',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFFE8680A),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-      
-            // Column headers
-            Container(
-              decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Color(0xFFEEEEEE)),
-                  bottom: BorderSide(color: Color(0xFFEEEEEE)),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
+              child: Text(
+                'Recent Complaints',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF0F172A),
                 ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: const Row(
+            ),
+
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Column(
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: _HeaderCell('TICKET ID'),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: _HeaderCell('ITEM NAME'),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: _HeaderCell('EQUIPMENT'),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: _HeaderCell('PRIORITY'),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: _HeaderCell('STATUS'),
-                  ),
-                  // Expanded(
-                  //   flex: 2,
-                  //   child: _HeaderCell('TIME'),
-                  // ),
+                  _buildHeader(),
+
+                  if (rows.isEmpty)
+                    const SizedBox(
+                      width: 900,
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Center(
+                          child: Text(
+                            'No complaints found.',
+                            style: TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    ...rows.map(_buildRow),
                 ],
               ),
             ),
-      
-            if (rows.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(
-                    child: Text(
-                      'No complaints found.',
-                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                    ),
-                  ),
-                )
-              else
-                ...rows.map(_buildRow),
           ],
         ),
       );
-      }
-    );
-  }
-
-  Widget _buildRow(ComplaintModel c) {
-    final priority = _mapPriority(c.priorityLevel);
-  final status = _mapStatus(c.techstatus);
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFF5F5F5)),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              c.ticketId,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF0F172A),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              c.categoryName ?? '-',
-              style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF334155),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              c.problem ?? '-',
-              style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF334155),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: _priorityBadge(priority),
-          ),
-          Expanded(
-            flex: 2,
-            child: _statusBadge(status ),
-          ),
-          // Expanded(
-          //   flex: 2,
-          //   child: Text(
-          //     c.time,
-          //     style: const TextStyle(
-          //       fontSize: 13,
-          //       color: Color(0xFF94A3B8),
-          //     ),
-          //   ),
-          // ),
-        ],
-      ),
-    );
-  }
+    },
+  );
 }
 
+Widget _buildHeader() {
+  return Container(
+    width: 900,
+    decoration: const BoxDecoration(
+      border: Border(
+        top: BorderSide(color: Color(0xFFEEEEEE)),
+        bottom: BorderSide(color: Color(0xFFEEEEEE)),
+      ),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    child: const Row(
+      children: [
+        SizedBox(width: 130, child: _HeaderCell('TICKET ID')),
+        SizedBox(width: 170, child: _HeaderCell('ITEM NAME')),
+        SizedBox(width: 250, child: _HeaderCell('EQUIPMENT')),
+        SizedBox(width: 170, child: _HeaderCell('PRIORITY')),
+        SizedBox(width: 140, child: _HeaderCell('STATUS')),
+      ],
+    ),
+  );
+}
+
+Widget _buildRow(ComplaintModel c) {
+  final priority = _mapPriority(c.priorityLevel);
+  final status = _mapStatus(c.techstatus);
+
+  return Container(
+    width: 900,
+    decoration: const BoxDecoration(
+      border: Border(
+        bottom: BorderSide(color: Color(0xFFF5F5F5)),
+      ),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 130,
+          child: Text(
+            c.ticketId,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+        ),
+
+        SizedBox(
+          width: 170,
+          child: Text(
+            c.categoryName ?? '-',
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF334155)),
+          ),
+        ),
+
+        SizedBox(
+          width: 250,
+          child: Text(
+            c.serviceRequired ?? c.problem ?? '-',
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF334155)),
+          ),
+        ),
+
+        SizedBox(
+          width: 170,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _priorityBadge(priority),
+          ),
+        ),
+
+        SizedBox(
+          width: 140,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _statusBadge(status),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+}
 class _HeaderCell extends StatelessWidget {
   final String label;
   const _HeaderCell(this.label);
