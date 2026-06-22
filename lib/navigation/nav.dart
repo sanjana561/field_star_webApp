@@ -38,13 +38,24 @@ final GoRouter appRouter = GoRouter(
         child: child,
       ),
       routes: [
-      GoRoute(
+    GoRoute(
   path: '/Dashboard',
   builder: (context, state) {
-    final technicianId = state.extra as String?;
+    // ✅ Handle both int and String extras safely
+    final extra = state.extra;
+    
+    String technicianId = '';
+    
+    if (extra is int) {
+      technicianId = extra.toString();
+    } else if (extra is String) {
+      technicianId = extra;
+    } else if (extra != null) {
+      technicianId = extra.toString();
+    }
 
     return Overview(
-      technicianId: technicianId ?? '',
+      technicianId: technicianId,
     );
   },
 ),

@@ -152,7 +152,7 @@ class TechnicianCard extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: () => _showEditProfile(context),
 
-                  child: const Text("View Profile"),
+                  child: const Text("Edit Profile"),
                 ),
               ),
               const SizedBox(width: 12),

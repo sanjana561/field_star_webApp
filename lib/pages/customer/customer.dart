@@ -290,7 +290,7 @@ class _CustomerState extends State<Customer> {
                                 location: _locationController.text,
                                 hotelName: _hotelName.text,
                                 totalEquipment:  int.tryParse(_equipmentController.text) ?? 0,
-                                revenueYtd: double.tryParse(_RevenueController.text)?? 0.0,
+                               
                               );
 
                          await _repository.registerCustomer(newTech);
@@ -324,7 +324,7 @@ class _CustomerState extends State<Customer> {
                             ),
                           )
                         : const Text(
-                            "Register Technician",
+                            "Register Customer",
                             style: TextStyle(color: Colors.white),
                           ),
                   ),

@@ -91,27 +91,43 @@ class TechnicianRepository {
   }
 
   //=====================Count technician=======================
-  Future<Map<String, dynamic>> getTechnicianStats() async {
-    final technicians = await _supabase.from('technician').select('id');
+Future<Map<String, dynamic>> getTechnicianStats() async {
+  final technicians = await _supabase
+      .from('technician')
+      .select('id');
 
-    final available = await _supabase
-        .from('technician')
-        .select('id')
-        .eq('techstatus', 'AVAILABLE');
+  final available = await _supabase
+      .from('Raise_complaint')
+      .select('technician_id')
+      .eq('tech_status', '');
 
-    final activeJobs = await _supabase
-        .from('Raise_complaint')
-        .select('id')
-        .eq('tech_status', 'Assigned');
+  final activeJobs = await _supabase
+      .from('Raise_complaint')
+      .select('technician_id')
+      .eq('tech_status', 'Assigned');
 
-    return {
-      'total': technicians.length,
-      'available': available.length,
-      'activeJobs': activeJobs.length,
-      'avgRating': 4.7,
-    };
+  final ratings = await _supabase
+      .from('service_ratings')
+      .select('id,rating');
+
+  double avgRating = 0;
+
+  if (ratings.isNotEmpty) {
+    final totalRating = ratings.fold<int>(
+      0,
+      (sum, item) => sum + ((item['rating'] ?? 0) as int),
+    );
+
+    avgRating = totalRating / ratings.length;
   }
 
+  return {
+    'total': technicians.length,
+    'available': available.length,
+    'activeJobs': activeJobs.length,
+    'avgRating': avgRating.toStringAsFixed(1),
+  };
+}
   //===================Register customer====================
 
   Future<void> registerCustomer(CustomerModel cust) async {
@@ -183,79 +199,103 @@ class TechnicianRepository {
     return response.length;
   }
 
- Future<Map<String, dynamic>> fetchDashboardStats(String technicianId) async {
+  //=================================Get dashboard count==============================================
+Future<Map<String, dynamic>> fetchDashboardStats(String technicianId) async {
+  print('fetchDashboardStats called with: "$technicianId"'); // ← add this
+  
+  final int? techId = int.tryParse(technicianId); // ← tryParse instead of parse
+  
+  // Guard — if id is invalid, return zeros instead of crashing
+  if (techId == null || techId == 0) {
+    print('Invalid technicianId: "$technicianId" — returning zeros');
+    return {
+      'activeComplaints': 0,
+      'completedToday': 0,
+      'activeTechnicians': 0,
+      'offlineTechnicians': 0,
+      'complaintTrend': 0.0,
+      'completedTrend': 0.0,
+    };
+  }
+
   final today = DateTime.now();
   final todayStart = DateTime(today.year, today.month, today.day);
   final yesterday = todayStart.subtract(const Duration(days: 1));
 
-  // Active complaints (pending) assigned to this technician
-  final activeToday = await _supabase
+  final allComplaintsRaw = await _supabase
       .from('Raise_complaint')
-      .select('id')
-      .eq('technician_id', technicianId)
-      .eq('complaint_status', 'pending');
+      .select('id, complaint_status, tech_status, created_at, technician_id');
 
-  // Active complaints yesterday
-  final activeYesterday = await _supabase
+  final myComplaintsRaw = await _supabase
       .from('Raise_complaint')
-      .select('id')
-      .eq('technician_id', technicianId)
-      .eq('complaint_status', 'pending')
-      .lt('created_at', todayStart.toIso8601String())
-      .gte('created_at', yesterday.toIso8601String());
+      .select('id, complaint_status, tech_status, created_at,');
+     
 
-  // Completed today
-  final completedToday = await _supabase
-      .from('Raise_complaint')
-      .select('id')
-      .eq('technician_id', technicianId)
-      .eq('complaint_status', 'Completed')
-      .gte('created_at', todayStart.toIso8601String());
+  final allComplaints = allComplaintsRaw as List;
+  final myComplaints  = myComplaintsRaw  as List;
 
-  // Completed yesterday
-  final completedYesterday = await _supabase
-      .from('Raise_complaint')
-      .select('id')
-      .eq('technician_id', technicianId)
-      .eq('complaint_status', 'Completed')
-      .lt('created_at', todayStart.toIso8601String())
-      .gte('created_at', yesterday.toIso8601String());
+  print('All complaints: ${allComplaints.length}');
+  print('My complaints: ${myComplaints.length}');
+  print('My statuses: ${myComplaints.map((c) => c['complaint_status']).toSet()}');
 
-  // Active technicians from technician table
-  final activeTechnicians = await _supabase
-      .from('technician')
-      .select('id')
-      .eq('status', 'Available');
+  final activeTodayList = myComplaints
+      .where((c) => c['complaint_status'] == 'pending')
+      .toList();
 
-  // Offline technicians
-  final offlineTechnicians = await _supabase
-      .from('technician')
-      .select('id')
-      .eq('status', 'Offline');
+  final activeYesterdayList = myComplaints.where((c) {
+    if (c['complaint_status'] != 'pending') return false;
+    final date = DateTime.tryParse(c['created_at']?.toString() ?? '')?.toLocal();
+    if (date == null) return false;
+    return date.isAfter(yesterday) && date.isBefore(todayStart);
+  }).toList();
+
+  final completedTodayList = myComplaints.where((c) {
+    if (c['complaint_status'] != 'Completed') return false;
+    final date = DateTime.tryParse(c['created_at']?.toString() ?? '')?.toLocal();
+    if (date == null) return false;
+    return !date.isBefore(todayStart);
+  }).toList();
+
+  final completedYesterdayList = myComplaints.where((c) {
+    if (c['complaint_status'] != 'Completed') return false;
+    final date = DateTime.tryParse(c['created_at']?.toString() ?? '')?.toLocal();
+    if (date == null) return false;
+    return date.isAfter(yesterday) && date.isBefore(todayStart);
+  }).toList();
+
+  final activeTechnicianIds = allComplaints
+      .where((c) => c['complaint_status'] == 'pending')
+      .map((c) => c['technician_id'])
+      .where((id) => id != null)
+      .toSet();
+
+  final allTechnicianIds = allComplaints
+      .map((c) => c['technician_id'])
+      .where((id) => id != null)
+      .toSet();
+
+  final offlineTechnicianIds = allTechnicianIds.difference(activeTechnicianIds);
 
   double complaintTrend = 0;
-  if (activeYesterday.isNotEmpty) {
-    complaintTrend =
-        ((activeToday.length - activeYesterday.length) /
-            activeYesterday.length) *
-        100;
+  if (activeYesterdayList.isNotEmpty) {
+    complaintTrend = ((activeTodayList.length - activeYesterdayList.length) /
+        activeYesterdayList.length) * 100;
   }
 
   double completedTrend = 0;
-  if (completedYesterday.isNotEmpty) {
-    completedTrend =
-        ((completedToday.length - completedYesterday.length) /
-            completedYesterday.length) *
-        100;
+  if (completedYesterdayList.isNotEmpty) {
+    completedTrend = ((completedTodayList.length - completedYesterdayList.length) /
+        completedYesterdayList.length) * 100;
   }
 
   return {
-    'activeComplaints': activeToday.length,
-    'completedToday': completedToday.length,
-    'activeTechnicians': activeTechnicians.length,
-    'offlineTechnicians': offlineTechnicians.length,
+    'activeComplaints': activeTodayList.length,
+    'completedToday':   completedTodayList.length,
+    'activeTechnicians': activeTechnicianIds.length,
+    'offlineTechnicians': offlineTechnicianIds.length,
     'complaintTrend': complaintTrend,
     'completedTrend': completedTrend,
   };
 }
 }
+

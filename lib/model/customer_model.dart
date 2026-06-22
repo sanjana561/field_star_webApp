@@ -6,7 +6,7 @@ class CustomerModel {
   final String place;
   final String hotelName;
   final int totalEquipment;
-  final double revenueYtd;
+  final double? revenueYtd;
    final int complaintCount; 
 
   CustomerModel({
@@ -17,7 +17,7 @@ class CustomerModel {
     required this.place,
     required this.hotelName,
     required this.totalEquipment,
-    required this.revenueYtd,
+     this.revenueYtd,
    this.complaintCount = 0,
   });
 
