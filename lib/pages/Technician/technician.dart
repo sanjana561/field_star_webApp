@@ -86,65 +86,7 @@ class _TechnicianState extends State<Technician> {
               ),
 
               SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFFE5E9F0),
-                    width: 1.0,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color(0xFFE2E8F0),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: (value) {
-                            setState(() {
-                              _searchQuery = value.toLowerCase().trim();
-                            });
-                          },
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF0F172A),
-                          ),
-                          decoration: const InputDecoration(
-                            hintText:
-                                'Search by TicketId, Customer, Equipments...',
-                            hintStyle: TextStyle(
-                              color: Color(
-                                0xFF94A3B8,
-                              ), // Muted text token colors
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            prefixIcon: Icon(
-                              Icons.search_rounded,
-                              color: Color(0xFF94A3B8),
-                              size: 20,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 10),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
-                ),
-              ),
+              
               const SizedBox(height: 12),
               FutureBuilder<Map>(
                 future: _repository.getTechnicianStats(),
