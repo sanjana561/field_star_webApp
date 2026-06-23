@@ -15,6 +15,7 @@ class ComplaintModel {
   final int? technicianId;
   final String? technicianName;
   final String techstatus;
+  final String?complaintstatus;
 
   ComplaintModel({
     required this.id,
@@ -30,7 +31,7 @@ class ComplaintModel {
     this.otp,
     this.technicianId,
     this.technicianName,
-    required this.techstatus,
+    required this.techstatus, this.complaintstatus,
   });
 
   factory ComplaintModel.fromJson(Map<String, dynamic> json) {
@@ -49,6 +50,7 @@ class ComplaintModel {
       technicianId: json['technician_id'],
       technicianName: json['technician_name'],
       techstatus: json['tech_status'] ?? 'Pending',
+      complaintstatus: json['complaint_status']??'pending'
     );
   }
 }

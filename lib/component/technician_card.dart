@@ -3,9 +3,10 @@ import 'package:field_star/model/tech_model.dart';
 import 'package:field_star/repository/technician_repository.dart';
 import 'package:flutter/material.dart';
 
-class TechnicianCard extends StatelessWidget {
+class TechnicianCard extends StatefulWidget {
   final String name;
   final String id;
+  final String techid;
   final String phone;
   final String location;
   final String activeJobs;
@@ -18,6 +19,7 @@ class TechnicianCard extends StatelessWidget {
   final TechModel technician;
   final String status;
   final bool showAssignButton;
+    final VoidCallback onDelete;
 
   const TechnicianCard({
     super.key,
@@ -34,9 +36,15 @@ class TechnicianCard extends StatelessWidget {
     required this.onAssignJob,
     required this.technician,
     required this.status,
-    required this.showAssignButton,
+    required this.showAssignButton, required this.techid, required this.onDelete,
   });
 
+  @override
+  State<TechnicianCard> createState() => _TechnicianCardState();
+}
+
+class _TechnicianCardState extends State<TechnicianCard> {
+  final database=TechnicianRepository();
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -47,128 +55,183 @@ class TechnicianCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 10,
+           crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Header: Avatar, Name, ID, Busy Badge
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                backgroundColor: const Color(0xFF2563EB),
-                child: Text(
-                  name.split(' ').map((e) => e[0]).join(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              // Header: Avatar, Name, ID, Busy Badge
+              Row(
                 children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  CircleAvatar(
+                    backgroundColor: const Color(0xFF2563EB),
+                    child: Text(
+                      widget.name.split(' ').map((e) => e[0]).join(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  Text(
-                    id,
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        widget.id,
+                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      widget.status,
+                      style: TextStyle(fontSize: 10, color: Color(0xFF92400E)),
+                    ),
                   ),
                 ],
               ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  status,
-                  style: TextStyle(fontSize: 10, color: Color(0xFF92400E)),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Contact Info
-          Row(
-            children: [
-              const Icon(Icons.phone_outlined, size: 14, color: Colors.grey),
-              const SizedBox(width: 4),
-              Text(
-                phone,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const SizedBox(width: 16),
-              const Icon(
-                Icons.location_on_outlined,
-                size: 14,
-                color: Colors.grey,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                location,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Metrics Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildMetric(activeJobs, "Active Jobs"),
-              _buildMetric(jobsToday, "Today"),
-              _buildMetric("★ $rating", "Rating"),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Specializations
-          const Text(
-            "Specializations",
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: specializations
-                .map(
-                  (spec) => Chip(
-                    label: Text(spec, style: const TextStyle(fontSize: 11)),
-                    padding: EdgeInsets.zero,
+              const SizedBox(height: 12),
+              // Contact Info
+              Row(
+                children: [
+                  const Icon(Icons.phone_outlined, size: 14, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    widget.phone,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
-                )
-                .toList(),
-          ),
-          const SizedBox(height: 20),
-          // Actions
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _showEditProfile(context),
-
-                  child: const Text("Edit Profile"),
-                ),
+                  const SizedBox(width: 16),
+                  const Icon(
+                    Icons.location_on_outlined,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    widget.location,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              if (showAssignButton)
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: onAssignJob,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2563EB),
-                      foregroundColor: Colors.white,
+              const SizedBox(height: 20),
+              // Metrics Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildMetric(widget.activeJobs, "Active Jobs"),
+                  _buildMetric(widget.jobsToday, "Today"),
+                  _buildMetric("★ ${widget.rating}", "Rating"),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Specializations
+              const Text(
+                "Specializations",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: widget.specializations
+                    .map(
+                      (spec) => Chip(
+                        label: Text(spec, style: const TextStyle(fontSize: 11)),
+                        padding: EdgeInsets.zero,
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 20),
+              // Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _showEditProfile(context),
+          
+                      child: const Text("Edit Profile"),
                     ),
-                    child: const Text("Assign Job"),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  if (widget.showAssignButton)
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: widget.onAssignJob,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text("Assign Job"),
+                      ),
+                    ),
+                ],
+              ),
+             
             ],
           ),
+        Tooltip(
+  message: 'Delete Technician',
+  child: IconButton(
+    onPressed: () async {
+      print('Delete button tapped — widget.id: ${widget.id}');
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
+          title: const Text('Delete Technician'),
+          content: const Text(
+              'Are you sure you want to delete this technician? This cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        ),
+      );
+
+      print('Dialog result: $confirmed');
+
+      if (confirmed == true) {
+  print('Calling deletetechnician with id: ${widget.technician.id}');
+  try {
+    await database.deletetechnician(id: widget.technician.id);
+    print('Delete successful');
+    widget.onDelete();
+  } catch (e) {
+    print('Delete failed with error: $e');
+  }
+}
+    },
+    icon: const Icon(Icons.delete),
+    color: Colors.red,
+  ),
+)
         ],
       ),
     );
@@ -186,11 +249,11 @@ class TechnicianCard extends StatelessWidget {
 
   //============================Edit technician form============================
   void _showEditProfile(BuildContext context) {
-    final nameController = TextEditingController(text: name);
-    final phoneController = TextEditingController(text: phone);
-    final locationController = TextEditingController(text: location);
+    final nameController = TextEditingController(text: widget.name);
+    final phoneController = TextEditingController(text: widget.phone);
+    final locationController = TextEditingController(text: widget.location);
     final specializationController = TextEditingController(
-      text: specializations.join(', '),
+      text: widget.specializations.join(', '),
     );
     final database = TechnicianRepository();
 
@@ -267,9 +330,9 @@ class TechnicianCard extends StatelessWidget {
                     onPressed: () async {
                       final updatetech = TechModel(
                         fullName: nameController.text.trim(),
-                        id: technician.id,
+                        id: widget.technician.id,
 
-                        techId: technician.techId,
+                        techId: widget.technician.techId,
                         phone: phoneController.text.trim(),
                         location: locationController.text.trim(),
                         specialization: specializationController.text.trim(),

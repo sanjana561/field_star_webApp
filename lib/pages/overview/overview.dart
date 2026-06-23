@@ -5,7 +5,7 @@ import 'package:field_star/repository/technician_repository.dart';
 import 'package:flutter/material.dart';
 
 class Overview extends StatefulWidget {
-   final String technicianId;
+  final String technicianId;
 
   const Overview({super.key, required this.technicianId});
 
@@ -14,29 +14,29 @@ class Overview extends StatefulWidget {
 }
 
 class _OverviewState extends State<Overview> {
-  
-  final repo =TechnicianRepository();
+  final repo = TechnicianRepository();
 
   @override
-void initState() {
-  super.initState(); 
+  void initState() {
+    super.initState();
     late Future<Map<String, dynamic>> _dashboardFuture;
-   debugPrint('Overview initState — technicianId: "${widget.technicianId}"');
-  
-  final int? parsedId = int.tryParse(widget.technicianId);
-  debugPrint('parsedId: $parsedId');
+    debugPrint('Overview initState — technicianId: "${widget.technicianId}"');
 
-  _dashboardFuture = (parsedId == null || parsedId == 0)
-      ? Future.value({
-          'activeComplaints': 0,
-          'completedToday': 0,
-          'activeTechnicians': 0,
-          'offlineTechnicians': 0,
-          'complaintTrend': 0.0,
-          'completedTrend': 0.0,
-        })
-      : repo.fetchDashboardStats(widget.technicianId);
-}
+    final int? parsedId = int.tryParse(widget.technicianId);
+    debugPrint('parsedId: $parsedId');
+
+    _dashboardFuture = (parsedId == null || parsedId == 0)
+        ? Future.value({
+            'activeComplaints': 0,
+            'completedToday': 0,
+            'activeTechnicians': 0,
+            'offlineTechnicians': 0,
+            'complaintTrend': 0.0,
+            'completedTrend': 0.0,
+          })
+        : repo.fetchDashboardStats(widget.technicianId);
+  }
+
   @override
   Widget build(BuildContext context) {
     return sidebar(
@@ -69,108 +69,100 @@ void initState() {
                   ),
                 ],
               ),
-                      
+
               const SizedBox(height: 16),
-        FutureBuilder<Map<String, dynamic>>(
-  future: repo.fetchDashboardStats(widget.technicianId),
-  builder: (context, snapshot) {
-    // Loading
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const SizedBox(
-        height: 100,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
+              FutureBuilder<Map<String, dynamic>>(
+                future: repo.fetchDashboardStats(widget.technicianId),
+                builder: (context, snapshot) {
+                  // Loading
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox(
+                      height: 100,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
 
-    // Error
-    if (snapshot.hasError) {
-      return SizedBox(
-        height: 100,
-        child: Center(
-          child: Text(
-            'Failed to load stats: ${snapshot.error}',
-            style: const TextStyle(color: Colors.red),
-          ),
-        ),
-      );
-    }
+                  // Error
+                  if (snapshot.hasError) {
+                    return SizedBox(
+                      height: 100,
+                      child: Center(
+                        child: Text(
+                          'Failed to load stats: ${snapshot.error}',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    );
+                  }
 
-    // No data guard
-    if (!snapshot.hasData) {
-      return const SizedBox(height: 100);
-    }
+                  // No data guard
+                  if (!snapshot.hasData) {
+                    return const SizedBox(height: 100);
+                  }
 
-    final data = snapshot.data!;
+                  final data = snapshot.data!;
 
-    // Safe casting with fallback defaults
-    final activeComplaints = (data['activeComplaints'] as num?)?.toInt() ?? 0;
-    final completedToday   = (data['completedToday']   as num?)?.toInt() ?? 0;
-    final activeTechs      = (data['activeTechnicians'] as num?)?.toInt() ?? 0;
-    final offlineTechs     = (data['offlineTechnicians'] as num?)?.toInt() ?? 0;
-    final complaintTrend   = (data['complaintTrend']   as num?)?.toDouble() ?? 0.0;
-    final completedTrend   = (data['completedTrend']   as num?)?.toDouble() ?? 0.0;
+                  // Safe casting with fallback defaults
+                  final activeComplaints =
+                      (data['activeComplaints'] as num?)?.toInt() ?? 0;
+                  final completedToday =
+                      (data['completedToday'] as num?)?.toInt() ?? 0;
+                  final activeTechs =
+                      (data['activeTechnicians'] as num?)?.toInt() ?? 0;
+                  final offlineTechs =
+                      (data['offlineTechnicians'] as num?)?.toInt() ?? 0;
+                  final complaintTrend =
+                      (data['complaintTrend'] as num?)?.toDouble() ?? 0.0;
+                  final completedTrend =
+                      (data['completedTrend'] as num?)?.toDouble() ?? 0.0;
 
-    return Row(
-      children: [
-        // ── Total Revenue (static for now) ───────────────────────────────
-        Expanded(
-          child: StatCard(
-            value: '0',
-            label: 'Total Revenue',
-            icon: Icons.attach_money,
-            iconBackgroundColor: Colors.greenAccent,
-            trend: '0%',
-            trendColor: Colors.green,
-          ),
-        ),
-        const SizedBox(width: 12),
+                  return Row(
+                    children: [
+                      // ── Total Revenue (static for now) ───────────────────────────────
+                    
 
-        // ── Active Complaints ─────────────────────────────────────────────
-        Expanded(
-          child: StatCard(
-            value: '$activeComplaints',
-            label: 'Active Complaints',
-            icon: Icons.warning,
-            iconBackgroundColor: Colors.orangeAccent,
-            trend:
-                '${complaintTrend >= 0 ? '+' : ''}${complaintTrend.toStringAsFixed(1)}%',
-            trendColor: complaintTrend >= 0 ? Colors.green : Colors.red,
-          ),
-        ),
-        const SizedBox(width: 12),
+                      // ── Active Complaints ─────────────────────────────────────────────
+                      Expanded(
+                        child: StatCard(
+                          value: '$activeComplaints',
+                          label: 'Active Complaints',
+                          icon: Icons.warning,
+                          iconBackgroundColor: Colors.orangeAccent,
+                         
+                        ),
+                      ),
+                      const SizedBox(width: 12),
 
-        // ── Completed Today ───────────────────────────────────────────────
-        Expanded(
-          child: StatCard(
-            value: '$completedToday',
-            label: 'Completed Today',
-            icon: Icons.done_all_outlined,
-            iconBackgroundColor: Colors.blueAccent,
-            trend:
-                '${completedTrend >= 0 ? '+' : ''}${completedTrend.toStringAsFixed(1)}%',
-            trendColor: completedTrend >= 0 ? Colors.green : Colors.red,
-          ),
-        ),
-        const SizedBox(width: 12),
+                      // ── Completed Today ───────────────────────────────────────────────
+                      Expanded(
+                        child: StatCard(
+                          value: '$completedToday',
+                          label: 'Completed Today',
+                          icon: Icons.done_all_outlined,
+                          iconBackgroundColor: Colors.blueAccent,
+                         
+                        ),
+                      ),
+                      const SizedBox(width: 12),
 
-        // ── Active Technicians ────────────────────────────────────────────
-        Expanded(
-          child: StatCard(
-            value: '$activeTechs',
-            label: 'Active Technicians',
-            icon: Icons.people,
-            iconBackgroundColor: Colors.purpleAccent,
-            trend: '$offlineTechs offline',
-            trendColor: Colors.red,
-          ),
-        ),
-      ],
-    );
-  },
-),  
-        
+                      // ── Active Technicians ────────────────────────────────────────────
+                      Expanded(
+                        child: StatCard(
+                          value: '$activeTechs',
+                          label: 'Active Technicians',
+                          icon: Icons.people,
+                          iconBackgroundColor: Colors.purpleAccent,
+                       
+                          trendColor: Colors.red,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+
               const SizedBox(height: 24),
-         
+
               // Recent complaints table
               RecentComplaintsTable(
                 searchQuery: '',
