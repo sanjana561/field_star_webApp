@@ -19,7 +19,7 @@ class TechnicianCard extends StatefulWidget {
   final TechModel technician;
   final String status;
   final bool showAssignButton;
-    final VoidCallback onDelete;
+  final VoidCallback onDelete;
 
   const TechnicianCard({
     super.key,
@@ -36,7 +36,9 @@ class TechnicianCard extends StatefulWidget {
     required this.onAssignJob,
     required this.technician,
     required this.status,
-    required this.showAssignButton, required this.techid, required this.onDelete,
+    required this.showAssignButton,
+    required this.techid,
+    required this.onDelete,
   });
 
   @override
@@ -44,7 +46,7 @@ class TechnicianCard extends StatefulWidget {
 }
 
 class _TechnicianCardState extends State<TechnicianCard> {
-  final database=TechnicianRepository();
+  final database = TechnicianRepository();
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -56,7 +58,7 @@ class _TechnicianCardState extends State<TechnicianCard> {
       padding: const EdgeInsets.all(20),
       child: Column(
         spacing: 10,
-           crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,13 +89,19 @@ class _TechnicianCardState extends State<TechnicianCard> {
                       ),
                       Text(
                         widget.id,
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEF3C7),
                       borderRadius: BorderRadius.circular(20),
@@ -109,7 +117,11 @@ class _TechnicianCardState extends State<TechnicianCard> {
               // Contact Info
               Row(
                 children: [
-                  const Icon(Icons.phone_outlined, size: 14, color: Colors.grey),
+                  const Icon(
+                    Icons.phone_outlined,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     widget.phone,
@@ -163,7 +175,7 @@ class _TechnicianCardState extends State<TechnicianCard> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => _showEditProfile(context),
-          
+
                       child: const Text("Edit Profile"),
                     ),
                   ),
@@ -181,57 +193,60 @@ class _TechnicianCardState extends State<TechnicianCard> {
                     ),
                 ],
               ),
-             
             ],
           ),
-        Tooltip(
-  message: 'Delete Technician',
-  child: IconButton(
-    onPressed: () async {
-      print('Delete button tapped — widget.id: ${widget.id}');
+          Tooltip(
+            message: 'Delete Technician',
+            child: IconButton(
+              onPressed: () async {
+                print('Delete button tapped — widget.id: ${widget.id}');
 
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
-          title: const Text('Delete Technician'),
-          content: const Text(
-              'Are you sure you want to delete this technician? This cannot be undone.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel'),
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    title: const Text('Delete Technician'),
+                    content: const Text(
+                      'Are you sure you want to delete this technician? This cannot be undone.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                );
+
+                print('Dialog result: $confirmed');
+
+                if (confirmed == true) {
+                  print(
+                    'Calling deletetechnician with id: ${widget.technician.id}',
+                  );
+                  try {
+                    await database.deletetechnician(id: widget.technician.id);
+                    print('Delete successful');
+                    widget.onDelete();
+                  } catch (e) {
+                    print('Delete failed with error: $e');
+                  }
+                }
+              },
+              icon: const Icon(Icons.delete),
+              color: Colors.red,
             ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Delete'),
-            ),
-          ],
-        ),
-      );
-
-      print('Dialog result: $confirmed');
-
-      if (confirmed == true) {
-  print('Calling deletetechnician with id: ${widget.technician.id}');
-  try {
-    await database.deletetechnician(id: widget.technician.id);
-    print('Delete successful');
-    widget.onDelete();
-  } catch (e) {
-    print('Delete failed with error: $e');
-  }
-}
-    },
-    icon: const Icon(Icons.delete),
-    color: Colors.red,
-  ),
-)
+          ),
         ],
       ),
     );

@@ -87,7 +87,7 @@ class TechnicianRepository {
             .update({
               'technician_id': technicianId,
               'technician_name': technicianName,
-              'tech_status': 'Assigned',
+              'tech_status': 'Pending',
             })
             .eq('id', int.tryParse(ticketId) ?? 0)
             .select();
@@ -130,7 +130,7 @@ class TechnicianRepository {
     final available = await _supabase
         .from('Raise_complaint')
         .select('technician_id')
-        .eq('tech_status', '');
+        .eq('tech_status', 'Pending');
 
     final activeJobs = await _supabase
         .from('Raise_complaint')
