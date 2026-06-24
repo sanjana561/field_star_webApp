@@ -18,7 +18,6 @@ class _CustomerState extends State<Customer> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _equipmentController = TextEditingController();
-
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -85,6 +84,7 @@ class _CustomerState extends State<Customer> {
                 ),
               ],
             ),
+//============================fetch kipbox count================================
             const SizedBox(height: 15),
             FutureBuilder<Map<String, dynamic>>(
               future: _repository.fetchCustomerStats(),
@@ -182,7 +182,7 @@ class _CustomerState extends State<Customer> {
                           hintText:
                               'Search by TicketId, Customer, Equipments...',
                           hintStyle: TextStyle(
-                            color: Color(0xFF94A3B8), // Muted text token colors
+                            color: Color(0xFF94A3B8), 
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                           ),
@@ -288,7 +288,7 @@ class _CustomerState extends State<Customer> {
                     obscureText: true,
                   ),
                   const SizedBox(height: 25),
-
+//======================Add customer logic===================================
                   SizedBox(
                     width: double.infinity,
                     height: 50,

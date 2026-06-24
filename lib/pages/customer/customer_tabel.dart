@@ -22,10 +22,10 @@ class _CustomersTableState extends State<CustomersTable> {
 
  void _refresh() {
   setState(() {
-    _customerFuture = _repo.fetchcustomer(); // reassign the future
+    _customerFuture = _repo.fetchcustomer(); 
   });
 }
-
+//===========================Search bar function================================
   List<CustomerModel> _applySearch(List<CustomerModel> all) {
     if (widget.searchQuery.isEmpty) return all;
     final q = widget.searchQuery.toLowerCase();
@@ -460,6 +460,7 @@ class _CustomersTableState extends State<CustomersTable> {
                             ),
                           ),
                           const SizedBox(width: 12),
+//==================edit customer==================================================
                           Expanded(
                             child: ElevatedButton(
                               onPressed: saving
@@ -480,7 +481,7 @@ class _CustomersTableState extends State<CustomersTable> {
                                           hotelName: hotelCtrl.text.trim(),
                                           location: locationCtrl.text.trim(),
                                         );
-                                        if (ctx.mounted) Navigator.pop(ctx); // ← ctx, with mounted check
+                                        if (ctx.mounted) Navigator.pop(ctx); 
                                     _refresh();
                                         messenger.showSnackBar(
                                           const SnackBar(
@@ -621,6 +622,7 @@ class _CustomersTableState extends State<CustomersTable> {
                           ),
                         ),
                         const SizedBox(width: 12),
+//=====================Delete customer=================================
                         Expanded(
                           child: ElevatedButton(
                             onPressed: deleting

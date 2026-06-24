@@ -14,7 +14,6 @@ class Technician extends StatefulWidget {
 
 class _TechnicianState extends State<Technician> {
   final _repository = TechnicianRepository();
-  String _searchQuery = '';
   bool _isLoading = false;
   late Future<List<TechModel>> _techFuture;
   final TextEditingController _emailController = TextEditingController();
@@ -34,7 +33,7 @@ class _TechnicianState extends State<Technician> {
   }
 
   void _refresh() => setState(() {
-    _techFuture = _repository.fetchTechnicians(); // ← fetch not delete
+    _techFuture = _repository.fetchTechnicians(); 
   });
   @override
   Widget build(BuildContext context) {
@@ -155,6 +154,7 @@ class _TechnicianState extends State<Technician> {
               Row(
                 children: [
                   Expanded(
+//=====================fetch technician========================================
                     child: FutureBuilder<List<TechModel>>(
                       future: _repository.fetchTechnicians(),
                       builder: (context, snapshot) {
@@ -188,7 +188,7 @@ class _TechnicianState extends State<Technician> {
                           itemCount: technicians.length,
                           itemBuilder: (context, index) {
                             final tech = technicians[index];
-
+//========================get active complaint count================================
                             return FutureBuilder<Map<String, dynamic>>(
                               future: _repository.getActiveComplaintCount(
                                 tech.id!,
@@ -314,10 +314,11 @@ class _TechnicianState extends State<Technician> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
+//=========================Add technician================================
                     onPressed: _isLoading
                         ? null
                         : () async {
-                            // Basic validation
+                            
                             if (_emailController.text.trim().isEmpty ||
                                 _passwordController.text.trim().isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -410,6 +411,7 @@ class _TechnicianState extends State<Technician> {
     );
   }
 
+//==============================Helper function=====================================
   Widget _buildField(
     String label,
     String hint,

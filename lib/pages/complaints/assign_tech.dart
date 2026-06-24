@@ -2,6 +2,7 @@ import 'package:field_star/model/tech_model.dart';
 import 'package:field_star/repository/technician_repository.dart';
 import 'package:flutter/material.dart';
 
+//==========================Technicain option class===========================================
 class TechnicianOption {
   final String initials;
   final String id;
@@ -79,6 +80,7 @@ class _AssignTechnicianDialogState extends State<AssignTechnicianDialog> {
                 style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
               ),
               const SizedBox(height: 20),
+//==========================Fetch technician======================================
               Expanded(
                 child: FutureBuilder<List<TechModel>>(
                   future: _techFuture,
@@ -112,6 +114,7 @@ class _AssignTechnicianDialogState extends State<AssignTechnicianDialog> {
                 ),
               ),
               const SizedBox(height: 8),
+//=========================Cancel button=====================================
               Row(
                 children: [
                   Expanded(
@@ -135,6 +138,7 @@ class _AssignTechnicianDialogState extends State<AssignTechnicianDialog> {
                     ),
                   ),
                   const SizedBox(width: 12),
+//=================Assign technician to paticular customer=================================
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _selected == null || _isAssigning
@@ -185,9 +189,10 @@ class _AssignTechnicianDialogState extends State<AssignTechnicianDialog> {
     );
   }
 
+//=========================this list all the availabel technician===========================================
   Widget _buildTechnicianTile(TechnicianOption tech) {
     final isSelected =
-        _selected?.id == tech.id; // ✅ Fixed: compare by id, not reference
+        _selected?.id == tech.id; 
 
     return GestureDetector(
       onTap: () => setState(() => _selected = tech),

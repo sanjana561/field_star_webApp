@@ -46,7 +46,7 @@ class _ComplaintsTableState extends State<ComplaintsTable> {
   void _refresh() => setState(() {
         _complaintsFuture = _repo.fetchComplaints();
       });
-
+//========================search bar function=============================================
   List<ComplaintModel> _applySearch(List<ComplaintModel> all) {
     if (widget.searchQuery.isEmpty) return all;
     final q = widget.searchQuery.toLowerCase();
@@ -89,7 +89,7 @@ class _ComplaintsTableState extends State<ComplaintsTable> {
     );
   }
 
-  // ── STATUS BADGE ─────────────────────────────────────────────────────────────
+  // ============== STATUS BADGE ====================================
   Widget _statusBadge(ComplaintStatus status) {
     late String label;
     late Color bg;
@@ -285,6 +285,7 @@ class _ComplaintsTableState extends State<ComplaintsTable> {
   // ── BUILD ────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+//=============================Fetch complaints===========================================
     return FutureBuilder<List<ComplaintModel>>(
       future: _complaintsFuture,
       builder: (context, snapshot) {
@@ -344,11 +345,12 @@ class _ComplaintsTableState extends State<ComplaintsTable> {
                     data: Theme.of(context).copyWith(
                       dividerColor: const Color(0xFFEEEEEE),
                     ),
+//=========================Datatabel=======================================================
                     child: DataTable(
                       columnSpacing: 16,
                       horizontalMargin: 20,
                       headingRowHeight: 42,
-                      dataRowMinHeight: 60,  // taller rows to fit 2-line cells
+                      dataRowMinHeight: 60,  
                       dataRowMaxHeight: 64,
                       dividerThickness: 1,
                       headingRowColor: WidgetStateProperty.all(
@@ -392,40 +394,5 @@ class _ComplaintsTableState extends State<ComplaintsTable> {
         );
       },
     );
-  }
-
-  // ── DELETE HANDLER ───────────────────────────────────────────────────────────
-  Future<void> _handleDelete(ComplaintModel complaint) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Complaint'),
-        content: Text(
-            'Are you sure you want to delete ticket ${complaint.ticketId}?'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
-          TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete',
-                  style: TextStyle(color: Colors.red))),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        // await _repo.deleteComplaint(complaint.id);
-        _refresh();
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Complaint deleted successfully')),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error deleting: $e')));
-      }
-    }
   }
 }

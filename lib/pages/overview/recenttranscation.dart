@@ -2,7 +2,6 @@ import 'package:field_star/model/complaint_model.dart';
 import 'package:field_star/repository/technician_repository.dart';
 import 'package:flutter/material.dart';
 
-
 enum Priority { high, medium, low }
 
 enum ComplaintStatus { pending, assigned, inProgress, completed }
@@ -58,7 +57,7 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
   void _refresh() => setState(() {
     _complaintsFuture = _repo.fetchComplaints();
   });
-
+//===================================Search bar functionality==============================
   List<ComplaintModel> _applySearch(List<ComplaintModel> all) {
     if (widget.searchQuery.isEmpty) return all;
     final q = widget.searchQuery.toLowerCase();
@@ -246,84 +245,84 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
                     data: Theme.of(
                       context,
                     ).copyWith(dividerColor: const Color(0xFFEEEEEE)),
-                    child: InkWell(
-                      child: DataTable(
-                        showCheckboxColumn: false,
+                    child: DataTable(
+                      showCheckboxColumn: false,
 
-                        // ── Layout ──────────────────────────────────
-                        columnSpacing: 16,
-                        horizontalMargin: 20,
-                        headingRowHeight: 40,
-                        dataRowMinHeight: 52,
-                        dataRowMaxHeight: 52,
-                        dividerThickness: 1,
+                      // ── Layout ──────────────────────────────────
+                      columnSpacing: 16,
+                      horizontalMargin: 20,
+                      headingRowHeight: 40,
+                      dataRowMinHeight: 52,
+                      dataRowMaxHeight: 52,
+                      dividerThickness: 1,
 
-                        // ── Header style ────────────────────────────
-                        headingRowColor: WidgetStateProperty.all(
-                          const Color(0xFFFAFAFA),
-                        ),
-                        headingTextStyle: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF94A3B8),
-                          letterSpacing: 0.5,
-                        ),
+                      // ── Header style ────────────────────────────
+                      headingRowColor: WidgetStateProperty.all(
+                        const Color(0xFFFAFAFA),
+                      ),
+                      headingTextStyle: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF94A3B8),
+                        letterSpacing: 0.5,
+                      ),
 
-                        // ── Row style ───────────────────────────────
-                        dataTextStyle: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF334155),
-                        ),
+                      // ── Row style ───────────────────────────────
+                      dataTextStyle: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF334155),
+                      ),
 
-                        // ── Columns ─────────────────────────────────
-                        columns: const [
-                          DataColumn(label: Text('TICKET ID')),
-                          DataColumn(label: Text('ITEM NAME')),
-                          DataColumn(label: Text('EQUIPMENT')),
-                          DataColumn(label: Text('PRIORITY')),
-                          DataColumn(label: Text('STATUS')),
-                        ],
+                      // ── Columns ─────────────────────────────────
+                      columns: const [
+                        DataColumn(label: Text('TICKET ID')),
+                        DataColumn(label: Text('ITEM NAME')),
+                        DataColumn(label: Text('EQUIPMENT')),
+                        DataColumn(label: Text('PRIORITY')),
+                        DataColumn(label: Text('STATUS')),
+                      ],
 
-                        // ── Rows ────────────────────────────────────
-                        rows: rows.map((c) {
-                          final priority = _mapPriority(c.priorityLevel);
-                          final status = _mapStatus(c.complaintstatus);
+                      // ── Rows ────────────────────────────────────
+                      rows: rows.map((c) {
+                        final priority = _mapPriority(c.priorityLevel);
+                        final status = _mapStatus(c.complaintstatus);
 
-                          return DataRow(
-                            onSelectChanged: (selected) {
-                              if (selected != null) {
-                                _showcomplaintform(context, c);
-                              }
-                            },
-                            cells: [
-                              DataCell(
-                                Text(
-                                  c.ticketId,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF0F172A),
-                                  ),
+                        return DataRow(
+                          onSelectChanged: (selected) {
+                            if (selected != null) {
+                              _showcomplaintform(context, c);
+                            }
+                          },
+                          cells: [
+                            DataCell(
+                              Text(
+                                c.ticketId,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF0F172A),
                                 ),
                               ),
-                              DataCell(
-                                Text(
-                                  c.categoryName ?? '-',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                            ),
+                            DataCell(
+                              Text(
+                                c.categoryName ?? '-',
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              DataCell(
-                                Text(
+                            ),
+                            DataCell(
+                              Expanded(
+                                child: Text(
                                   c.serviceRequired ?? c.problem ?? '-',
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              DataCell(_priorityBadge(priority)),
-                              DataCell(_statusBadge(status)),
-                            ],
-                          );
-                        }).toList(),
-                      ),
+                            ),
+                            DataCell(_priorityBadge(priority)),
+                            DataCell(_statusBadge(status)),
+                          ],
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
@@ -336,9 +335,7 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
 
   //=============================Showw all complaint Details=============================
   void _showcomplaintform(BuildContext context, ComplaintModel c) {
- 
     final formKey = GlobalKey<FormState>();
-  
 
     showDialog(
       context: context,
@@ -399,13 +396,8 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
                       ),
                       const SizedBox(height: 20),
 
-
-
-                      _editField(
-                        'Tickect ID:-',
-                        c.ticketId ,
-                        Icons.numbers,
-                      ),
+                      //=================view complaint details on click===================================
+                      _editField('Tickect ID:-', c.ticketId, Icons.numbers),
                       const SizedBox(height: 14),
                       _editField(
                         'Item Name:-',
@@ -424,25 +416,24 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
                         c.problem ?? 'N/A',
                         Icons.location_on_outlined,
                       ),
-                       const SizedBox(height: 14),
-                       _editField(
+                      const SizedBox(height: 14),
+                      _editField(
                         'Priority Level:-',
                         c.priorityLevel ?? 'N/A',
                         Icons.location_on_outlined,
                       ),
-                        const SizedBox(height: 14),
-                       _editField(
+                      const SizedBox(height: 14),
+                      _editField(
                         'Status:-',
                         c.complaintstatus ?? 'N/A',
                         Icons.location_on_outlined,
                       ),
-                       const SizedBox(height: 14),
-                       _editField(
+                      const SizedBox(height: 14),
+                      _editField(
                         'Tech Assigned:-',
                         c.technicianName ?? 'N/A',
                         Icons.location_on_outlined,
                       ),
-                     
                     ],
                   ),
                 ),
@@ -471,17 +462,16 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
             ),
           ),
           const SizedBox(width: 15),
-          Row(
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF0F172A),
-                  fontWeight: FontWeight.w500,
-                ),
+          Expanded(
+            child: Text(
+              value,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF0F172A),
+                fontWeight: FontWeight.w500,
               ),
-            ],
+            ),
           ),
         ],
       ),

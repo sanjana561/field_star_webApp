@@ -29,8 +29,7 @@ class TechnicianRepository {
         .eq('id', id)
         .select();
 
-    print('UPDATE RESPONSE: $response');
-
+  
     if (response.isEmpty) {
       throw Exception('No row updated. Wrong id or RLS blocking.');
     }
@@ -41,10 +40,9 @@ class TechnicianRepository {
   }
 
   //============================insert technician===========================
-  // Change the method signature to use TechModel
   Future<void> registerTechnician(TechModel technician) async {
     try {
-      // This will now work because .toMap() exists in TechModel
+     
       await _supabase.from('technician').insert(technician.toMap());
     } catch (e) {
       throw Exception('Failed to register technician: $e');
@@ -66,9 +64,7 @@ class TechnicianRepository {
     required int technicianId,
     required String technicianName,
   }) async {
-    print('>>> ticketId received: "$ticketId"'); // add this
-    print('>>> technicianId: $technicianId');
-    print('>>> technicianName: $technicianName');
+  
     try {
       var response = await _supabase
           .from('Raise_complaint')
@@ -81,7 +77,7 @@ class TechnicianRepository {
           .select();
 
       if (response.isEmpty) {
-        print(' tickectid match failed, trying id column...');
+       
         response = await _supabase
             .from('Raise_complaint')
             .update({
@@ -93,19 +89,14 @@ class TechnicianRepository {
             .select();
       }
 
-      if (response.isEmpty) {
-        print(' Still no rows matched');
-      } else {
-        print('Updated ${response.length} row(s): $response');
-      }
+     
     } catch (e) {
-      print('Error: $e');
+     
       rethrow;
     }
   }
 
   //=======================Fetch complaint========================
-  // In technician_repository.dart
 
   Future<List<ComplaintModel>> fetchComplaints() async {
     try {
@@ -118,7 +109,6 @@ class TechnicianRepository {
           .map((json) => ComplaintModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('fetchComplaints error: $e');
       rethrow;
     }
   }
@@ -160,7 +150,7 @@ class TechnicianRepository {
       'avgRating': avgRating.toStringAsFixed(1),
     };
   }
-  //===================Register customer====================
+  //===================Register customer==================================
 
   Future<void> registerCustomerWithAuth({
     required String customerName,
@@ -172,7 +162,7 @@ class TechnicianRepository {
     required String email,
     required String password,
   }) async {
-    // Step 1: Create auth user — trigger will auto-insert into customer table
+   
     final authResponse = await _supabase.auth.signUp(
       email: email,
       password: password,
@@ -184,10 +174,8 @@ class TechnicianRepository {
     }
 
     final userId = authResponse.user!.id;
-    print('Auth user created: $userId');
+  
 
-    // Step 2: Update the customer row the trigger already created
-    // with the remaining fields the trigger doesn't know about
     await _supabase
         .from('customer')
         .update({
@@ -198,12 +186,11 @@ class TechnicianRepository {
           'cust_hotelname': hotelName,
           'total_equipment': totalEquipment,
         })
-        .eq('id', userId); // trigger inserted with auth UUID as id
+        .eq('id', userId); 
 
-    print('Customer updated with full details: $userId');
   }
 
-  //========================Fetch customer==========
+  //========================Fetch customer================================
   Future<List<CustomerModel>> fetchcustomer() async {
   final response = await Supabase.instance.client
       .from('customer')
@@ -228,24 +215,19 @@ class TechnicianRepository {
   }).toList();
 }
 
-  //=======================Updated technician=======================
+//=======================Updated technician=======================
   Future<void> updatetechnician(TechModel technician) async {
     await _supabase
         .from('technician')
         .update(technician.toMap())
         .eq('id', technician.id!);
   }
-
+//==================Delete technician=============================
   Future<void> deletetechnician({required dynamic id}) async {
     final int? parsedId = int.tryParse(id.toString());
     if (parsedId == null) {
-      print('Invalid id: $id');
       return;
     }
-
-    print('Deleting technician with db id: $parsedId');
-
-    // Step 1: Unassign from complaints using integer id
     await _supabase
         .from('Raise_complaint')
         .update({
@@ -255,45 +237,12 @@ class TechnicianRepository {
         })
         .eq('technician_id', parsedId);
 
-    // Step 2: Delete technician using integer id
+  
     await _supabase.from('technician').delete().eq('id', parsedId);
-
-    print('Done');
   }
 
-  Future<int> getPendingComplaintCount(String technicianId) async {
-    final response = await _supabase
-        .from('Raise_complaint')
-        .select('id')
-        .eq('technician_id', technicianId)
-        .eq('tech_status', 'Pending');
 
-    return response.length;
-  }
-
-  Future<int> getTodayComplaintCount(String technicianId) async {
-     final today = DateTime.now();
-   final todayStr =
-      '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-
-    final response = await _supabase
-       .from('service_ratings')
-        .select('id')
-        .eq('technician_id', technicianId)
-        .eq('service_date', todayStr);
-
-    return response.length;
-  }
-
-  // Future<int> getActiveComplaintCount(String technicianId) async {
-  //   final response = await _supabase
-  //       .from('Raise_complaint')
-  //       .select('id')
-  //       .eq('technician_id', technicianId)
-  //       .inFilter('tech_status', ['Assigned']);
-
-  //   return response.length;
-  // }
+//==============================Get technician KPi box count==================================
   Future<Map<String, dynamic>> getActiveComplaintCount(String technicianId) async {
   final today = DateTime.now();
   final todayStr =
@@ -445,7 +394,7 @@ Future<double> getratings(String technicianId) async {
       'completedTrend': completedTrend,
     };
   }
-
+//=======================save technician to the auth and technician tabel============================================
   Future<void> registerTechnicianWithAuth({
     required String fullName,
     required String techId,
@@ -474,10 +423,9 @@ Future<double> getratings(String technicianId) async {
       'Phone_no': phone,
       'Location': location,
       'Specialization': specialization,
-      'user_id': userId, // ← links to auth.users
+      'user_id': userId, 
     });
 
-    print('Technician inserted with user_id: $userId');
   }
   //============================Fetch customer stats=========================
 Future<Map<String, dynamic>> fetchCustomerStats() async {
