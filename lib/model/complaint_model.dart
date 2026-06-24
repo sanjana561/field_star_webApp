@@ -1,5 +1,3 @@
-// lib/model/complaint_model.dart
-
 class ComplaintModel {
   final String id;
   final String ticketId;
@@ -37,7 +35,7 @@ class ComplaintModel {
   factory ComplaintModel.fromJson(Map<String, dynamic> json) {
     return ComplaintModel(
       id: json['id'].toString(),
-      ticketId: json['tickectid'] ?? '',        // note: typo in your DB column
+      ticketId: json['tickectid'] ?? '',       
       createdAt: json['created_at'] ?? '',
       categoryName: json['Category_name'],
       serviceRequired: json['service_required'],

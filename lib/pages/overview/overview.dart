@@ -109,18 +109,10 @@ class _OverviewState extends State<Overview> {
                       (data['completedToday'] as num?)?.toInt() ?? 0;
                   final activeTechs =
                       (data['activeTechnicians'] as num?)?.toInt() ?? 0;
-                  final offlineTechs =
-                      (data['offlineTechnicians'] as num?)?.toInt() ?? 0;
-                  final complaintTrend =
-                      (data['complaintTrend'] as num?)?.toDouble() ?? 0.0;
-                  final completedTrend =
-                      (data['completedTrend'] as num?)?.toDouble() ?? 0.0;
+               
 
                   return Row(
                     children: [
-                      // ── Total Revenue (static for now) ───────────────────────────────
-                    
-
                       // ── Active Complaints ─────────────────────────────────────────────
                       Expanded(
                         child: StatCard(

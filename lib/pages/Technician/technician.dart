@@ -16,9 +16,9 @@ class _TechnicianState extends State<Technician> {
   final _repository = TechnicianRepository();
   String _searchQuery = '';
   bool _isLoading = false;
-   late Future<List<TechModel>> _techFuture;
-final TextEditingController _emailController = TextEditingController();
-final TextEditingController _passwordController = TextEditingController();
+  late Future<List<TechModel>> _techFuture;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -32,9 +32,10 @@ final TextEditingController _passwordController = TextEditingController();
 
     super.dispose();
   }
- void _refresh() => setState(() {
-      _techFuture = _repository.fetchTechnicians(); // ← fetch not delete
-    });
+
+  void _refresh() => setState(() {
+    _techFuture = _repository.fetchTechnicians(); // ← fetch not delete
+  });
   @override
   Widget build(BuildContext context) {
     return sidebar(
@@ -90,7 +91,7 @@ final TextEditingController _passwordController = TextEditingController();
               ),
 
               SizedBox(height: 16),
-              
+
               const SizedBox(height: 12),
               FutureBuilder<Map>(
                 future: _repository.getTechnicianStats(),
@@ -188,24 +189,28 @@ final TextEditingController _passwordController = TextEditingController();
                           itemBuilder: (context, index) {
                             final tech = technicians[index];
 
-                            return FutureBuilder<int>(
-                                future: _repository.getActiveComplaintCount(tech.id!),
+                            return FutureBuilder<Map<String, dynamic>>(
+                              future: _repository.getActiveComplaintCount(
+                                tech.id!,
+                              ),
                               builder: (context, complaintSnapshot) {
-                               final activeCount = complaintSnapshot.data ?? 0;
-                  final isBusy = activeCount > 0;
+                                final activeJobs =(complaintSnapshot.data?['activeJobs'] as num?)?.toInt() ??  0;
+                                final jobsToday =(complaintSnapshot.data?['jobsToday'] as num?)?.toInt() ??    0;
+                                final rating =(complaintSnapshot.data?['rating'] as num?)?.toDouble() ?? 0.0;
+                                final isBusy = activeJobs > 0;
 
-                              return  TechnicianCard(
+                                return TechnicianCard(
                                   technician: tech,
                                   name: tech.fullName,
                                   id: tech.techId,
                                   techid: tech.techId,
                                   phone: tech.phone,
                                   location: tech.location,
-                                  activeJobs: activeCount.toString(),
-                                  jobsToday: "0",
+                                  activeJobs: activeJobs.toString(),
+                                  jobsToday: jobsToday.toString(),
                                   status: isBusy ? "Busy" : "Available",
                                   showAssignButton: !isBusy,
-                                  rating: "5.0",
+                                  rating: rating.toStringAsFixed(1),
                                   completionRate: 1.0,
                                   specializations: [tech.specialization],
                                   onViewProfile: () {},
@@ -229,187 +234,216 @@ final TextEditingController _passwordController = TextEditingController();
   }
 
   //==================================Add Technician Form================================
-void _showRegisterTechnicianDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          width: 400,
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Add Technician",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
+  void _showRegisterTechnicianDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            width: 400,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Add Technician",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
 
-              _buildField("Full Name", '', _nameController),
-              const SizedBox(height: 15),
-              _buildField("Tech Id", "", _idController),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(child: _buildField("Phone number", '', _phoneController)),
-                  const SizedBox(width: 15),
-                  Expanded(child: _buildField("Location", '', _locationController)),
-                ],
-              ),
-              const SizedBox(height: 15),
-              _buildField("Specialization", '', _specializationController),
-              const SizedBox(height: 15),
+                _buildField("Full Name", '', _nameController),
+                const SizedBox(height: 15),
+                _buildField("Tech Id", "", _idController),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildField("Phone number", '', _phoneController),
+                    ),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: _buildField("Location", '', _locationController),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                _buildField("Specialization", '', _specializationController),
+                const SizedBox(height: 15),
 
-              // ── Auth fields ──────────────────────────────────────
-              _buildField("Email", 'technician@example.com', _emailController,
-                  keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 15),
-              _buildField("Password", 'Min 6 characters', _passwordController,
-                  obscureText: true),
-              const SizedBox(height: 25),
+                // ── Auth fields ──────────────────────────────────────
+                _buildField(
+                  "Email",
+                  'technician@example.com',
+                  _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 15),
+                _buildField(
+                  "Password",
+                  'Min 6 characters',
+                  _passwordController,
+                  obscureText: true,
+                ),
+                const SizedBox(height: 25),
 
-              // Register Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                  onPressed: _isLoading
-                      ? null
-                      : () async {
-                          // Basic validation
-                          if (_emailController.text.trim().isEmpty ||
-                              _passwordController.text.trim().isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Email and password are required')),
-                            );
-                            return;
-                          }
-                          if (_passwordController.text.trim().length < 6) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Password must be at least 6 characters')),
-                            );
-                            return;
-                          }
-
-                          setState(() => _isLoading = true);
-                          try {
-                            await _repository.registerTechnicianWithAuth(
-                              fullName: _nameController.text.trim(),
-                              techId: _idController.text.trim(),
-                              phone: _phoneController.text.trim(),
-                              location: _locationController.text.trim(),
-                              specialization: _specializationController.text.trim(),
-                              email: _emailController.text.trim(),
-                              password: _passwordController.text.trim(),
-                            );
-
-                            // Clear all fields
-                            _nameController.clear();
-                            _idController.clear();
-                            _phoneController.clear();
-                            _locationController.clear();
-                            _specializationController.clear();
-                            _emailController.clear();
-                            _passwordController.clear();
-
-                            if (context.mounted) {
-                              Navigator.pop(context);
+                // Register Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2563EB),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            // Basic validation
+                            if (_emailController.text.trim().isEmpty ||
+                                _passwordController.text.trim().isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content:
-                                      Text('Technician registered successfully!'),
-                                  backgroundColor: Colors.green,
+                                  content: Text(
+                                    'Email and password are required',
+                                  ),
                                 ),
                               );
-                              _refresh();
+                              return;
                             }
-                          } catch (e) {
-                            if (context.mounted) {
+                            if (_passwordController.text.trim().length < 6) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Error: ${e.toString()}'),
-                                  backgroundColor: Colors.red,
+                                const SnackBar(
+                                  content: Text(
+                                    'Password must be at least 6 characters',
+                                  ),
                                 ),
                               );
+                              return;
                             }
-                          } finally {
-                            if (mounted) setState(() => _isLoading = false);
-                          }
-                        },
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text("Register Technician",
-                          style: TextStyle(color: Colors.white)),
+
+                            setState(() => _isLoading = true);
+                            try {
+                              await _repository.registerTechnicianWithAuth(
+                                fullName: _nameController.text.trim(),
+                                techId: _idController.text.trim(),
+                                phone: _phoneController.text.trim(),
+                                location: _locationController.text.trim(),
+                                specialization: _specializationController.text
+                                    .trim(),
+                                email: _emailController.text.trim(),
+                                password: _passwordController.text.trim(),
+                              );
+
+                              // Clear all fields
+                              _nameController.clear();
+                              _idController.clear();
+                              _phoneController.clear();
+                              _locationController.clear();
+                              _specializationController.clear();
+                              _emailController.clear();
+                              _passwordController.clear();
+
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Technician registered successfully!',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                _refresh();
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error: ${e.toString()}'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } finally {
+                              if (mounted) setState(() => _isLoading = false);
+                            }
+                          },
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            "Register Technician",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
   Widget _buildField(
-  String label,
-  String hint,
-  TextEditingController controller, {
-  TextInputType keyboardType = TextInputType.text,
-  bool obscureText = false,
-}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade800,
-        ),
-      ),
-      const SizedBox(height: 5),
-      TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        obscureText: obscureText,
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.grey.shade50,
-          hintText: hint,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
+    String label,
+    String hint,
+    TextEditingController controller, {
+    TextInputType keyboardType = TextInputType.text,
+    bool obscureText = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey.shade800,
           ),
         ),
-      ),
-    ],
-  );
-}
+        const SizedBox(height: 5),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          obscureText: obscureText,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey.shade50,
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

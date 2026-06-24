@@ -20,19 +20,23 @@ class _CustomersTableState extends State<CustomersTable> {
     _customerFuture = _repo.fetchcustomer();
   }
 
-  void _refresh() => setState(() {
-        _customerFuture = _repo.fetchcustomer();
-      });
+ void _refresh() {
+  setState(() {
+    _customerFuture = _repo.fetchcustomer(); // reassign the future
+  });
+}
 
   List<CustomerModel> _applySearch(List<CustomerModel> all) {
     if (widget.searchQuery.isEmpty) return all;
     final q = widget.searchQuery.toLowerCase();
     return all
-        .where((c) =>
-            c.customerName.toLowerCase().contains(q) ||
-            c.phone.toLowerCase().contains(q) ||
-            c.hotelName.toLowerCase().contains(q) ||
-            c.location.toLowerCase().contains(q))
+        .where(
+          (c) =>
+              c.customerName.toLowerCase().contains(q) ||
+              c.phone.toLowerCase().contains(q) ||
+              c.hotelName.toLowerCase().contains(q) ||
+              c.location.toLowerCase().contains(q),
+        )
         .toList();
   }
 
@@ -109,7 +113,7 @@ class _CustomersTableState extends State<CustomersTable> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          '${c.totalEquipment}',
+          '${c.equipmentCount}',
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -160,11 +164,14 @@ class _CustomersTableState extends State<CustomersTable> {
             children: const [
               Icon(Icons.edit_outlined, size: 16, color: Color(0xFF3B82F6)),
               SizedBox(width: 10),
-              Text('Edit',
-                  style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF0F172A))),
+              Text(
+                'Edit',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
             ],
           ),
         ),
@@ -176,11 +183,14 @@ class _CustomersTableState extends State<CustomersTable> {
             children: const [
               Icon(Icons.delete_outline, size: 16, color: Color(0xFFEF4444)),
               SizedBox(width: 10),
-              Text('Delete',
-                  style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFFEF4444))),
+              Text(
+                'Delete',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFFEF4444),
+                ),
+              ),
             ],
           ),
         ),
@@ -188,14 +198,20 @@ class _CustomersTableState extends State<CustomersTable> {
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Actions',
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF3B82F6))),
+          Text(
+            'Actions',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF3B82F6),
+            ),
+          ),
           SizedBox(width: 4),
-          Icon(Icons.keyboard_arrow_down_rounded,
-              size: 16, color: Color(0xFF3B82F6)),
+          Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 16,
+            color: Color(0xFF3B82F6),
+          ),
         ],
       ),
     );
@@ -210,7 +226,9 @@ class _CustomersTableState extends State<CustomersTable> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: Padding(
-                padding: EdgeInsets.all(40), child: CircularProgressIndicator()),
+              padding: EdgeInsets.all(40),
+              child: CircularProgressIndicator(),
+            ),
           );
         }
 
@@ -221,14 +239,19 @@ class _CustomersTableState extends State<CustomersTable> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.error_outline,
-                      color: Color(0xFFE05252), size: 32),
+                  const Icon(
+                    Icons.error_outline,
+                    color: Color(0xFFE05252),
+                    size: 32,
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     'Failed to load customers\n${snapshot.error}',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                        fontSize: 13, color: Color(0xFF94A3B8)),
+                      fontSize: 13,
+                      color: Color(0xFF94A3B8),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextButton(onPressed: _refresh, child: const Text('Retry')),
@@ -254,18 +277,19 @@ class _CustomersTableState extends State<CustomersTable> {
                 const Padding(
                   padding: EdgeInsets.all(32),
                   child: Center(
-                    child: Text('No Customer found.',
-                        style: TextStyle(
-                            color: Color(0xFF94A3B8), fontSize: 14)),
+                    child: Text(
+                      'No Customer found.',
+                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                    ),
                   ),
                 )
               else
                 SizedBox(
                   width: double.infinity,
                   child: Theme(
-                    data: Theme.of(context).copyWith(
-                      dividerColor: const Color(0xFFEEEEEE),
-                    ),
+                    data: Theme.of(
+                      context,
+                    ).copyWith(dividerColor: const Color(0xFFEEEEEE)),
                     child: DataTable(
                       columnSpacing: 16,
                       horizontalMargin: 20,
@@ -331,7 +355,8 @@ class _CustomersTableState extends State<CustomersTable> {
             child: Dialog(
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Form(
@@ -349,19 +374,28 @@ class _CustomersTableState extends State<CustomersTable> {
                               color: const Color(0xFFEFF6FF),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.edit_outlined,
-                                size: 18, color: Color(0xFF3B82F6)),
+                            child: const Icon(
+                              Icons.edit_outlined,
+                              size: 18,
+                              color: Color(0xFF3B82F6),
+                            ),
                           ),
                           const SizedBox(width: 12),
-                          const Text('Edit Customer',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF0F172A))),
+                          const Text(
+                            'Edit Customer',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
                           const Spacer(),
                           IconButton(
-                            icon: const Icon(Icons.close,
-                                size: 18, color: Color(0xFF94A3B8)),
+                            icon: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Color(0xFF94A3B8),
+                            ),
                             onPressed: () => Navigator.pop(ctx),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
@@ -369,37 +403,60 @@ class _CustomersTableState extends State<CustomersTable> {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      _editField(nameCtrl, 'Customer Name',
-                          Icons.person_outline, 'Enter name'),
+                      _editField(
+                        nameCtrl,
+                        'Customer Name',
+                        Icons.person_outline,
+                        'Enter name',
+                      ),
                       const SizedBox(height: 14),
-                      _editField(phoneCtrl, 'Phone', Icons.phone_outlined,
-                          'Enter phone',
-                          keyboardType: TextInputType.phone),
+                      _editField(
+                        phoneCtrl,
+                        'Phone',
+                        Icons.phone_outlined,
+                        'Enter phone',
+                        keyboardType: TextInputType.phone,
+                      ),
                       const SizedBox(height: 14),
-                      _editField(hotelCtrl, 'Hotel / Company',
-                          Icons.business_outlined, 'Enter hotel name'),
+                      _editField(
+                        hotelCtrl,
+                        'Hotel / Company',
+                        Icons.business_outlined,
+                        'Enter hotel name',
+                      ),
                       const SizedBox(height: 14),
-                      _editField(locationCtrl, 'Location',
-                          Icons.location_on_outlined, 'Enter location'),
+                      _editField(
+                        locationCtrl,
+                        'Location',
+                        Icons.location_on_outlined,
+                        'Enter location',
+                      ),
                       const SizedBox(height: 24),
                       Row(
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed:
-                                  saving ? null : () => Navigator.pop(ctx),
+                              onPressed: saving
+                                  ? null
+                                  : () => Navigator.pop(ctx),
                               style: OutlinedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 side: const BorderSide(
-                                    color: Color(0xFFE2E8F0)),
+                                  color: Color(0xFFE2E8F0),
+                                ),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8)),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                              child: const Text('Cancel',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: Color(0xFF64748B))),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -411,8 +468,9 @@ class _CustomersTableState extends State<CustomersTable> {
                                       if (!formKey.currentState!.validate())
                                         return;
                                       final nav = Navigator.of(context);
-                                      final messenger =
-                                          ScaffoldMessenger.of(context);
+                                      final messenger = ScaffoldMessenger.of(
+                                        context,
+                                      );
                                       setLocal(() => saving = true);
                                       try {
                                         await _repo.updateCustomer(
@@ -422,44 +480,55 @@ class _CustomersTableState extends State<CustomersTable> {
                                           hotelName: hotelCtrl.text.trim(),
                                           location: locationCtrl.text.trim(),
                                         );
-                                        nav.pop();
-                                        await Future.delayed(Duration.zero);
-                                        _refresh();
-                                        messenger.showSnackBar(const SnackBar(
-                                          content: Text('Customer updated'),
-                                          backgroundColor: Color(0xFF22C55E),
-                                          behavior: SnackBarBehavior.floating,
-                                        ));
+                                        if (ctx.mounted) Navigator.pop(ctx); // ← ctx, with mounted check
+                                    _refresh();
+                                        messenger.showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Customer updated'),
+                                            backgroundColor: Color(0xFF22C55E),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
                                       } catch (e) {
                                         setLocal(() => saving = false);
-                                        messenger.showSnackBar(SnackBar(
-                                          content: Text('Failed: $e'),
-                                          backgroundColor:
-                                              const Color(0xFFEF4444),
-                                          behavior: SnackBarBehavior.floating,
-                                        ));
+                                        messenger.showSnackBar(
+                                          SnackBar(
+                                            content: Text('Failed: $e'),
+                                            backgroundColor: const Color(
+                                              0xFFEF4444,
+                                            ),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
                                       }
                                     },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF3B82F6),
                                 foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8)),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                               child: saving
                                   ? const SizedBox(
                                       width: 16,
                                       height: 16,
                                       child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white))
-                                  : const Text('Save Changes',
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Save Changes',
                                       style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600)),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                             ),
                           ),
                         ],
@@ -488,7 +557,8 @@ class _CustomersTableState extends State<CustomersTable> {
             child: Dialog(
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -501,42 +571,53 @@ class _CustomersTableState extends State<CustomersTable> {
                         color: const Color(0xFFFEF2F2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.delete_outline,
-                          size: 26, color: Color(0xFFEF4444)),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        size: 26,
+                        color: Color(0xFFEF4444),
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Delete Customer',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A))),
+                    const Text(
+                      'Delete Customer',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       'Are you sure you want to delete "${c.customerName}"? This cannot be undone.',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF64748B),
-                          height: 1.5),
+                        fontSize: 13,
+                        color: Color(0xFF64748B),
+                        height: 1.5,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed:
-                                deleting ? null : () => Navigator.pop(ctx),
+                            onPressed: deleting
+                                ? null
+                                : () => Navigator.pop(ctx),
                             style: OutlinedButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 12),
-                              side: const BorderSide(
-                                  color: Color(0xFFE2E8F0)),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              side: const BorderSide(color: Color(0xFFE2E8F0)),
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
-                            child: const Text('Cancel',
-                                style: TextStyle(
-                                    fontSize: 13, color: Color(0xFF64748B))),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -546,50 +627,63 @@ class _CustomersTableState extends State<CustomersTable> {
                                 ? null
                                 : () async {
                                     final nav = Navigator.of(context);
-                                    final messenger =
-                                        ScaffoldMessenger.of(context);
+                                    final messenger = ScaffoldMessenger.of(
+                                      context,
+                                    );
                                     final name = c.customerName;
                                     setLocal(() => deleting = true);
                                     try {
                                       await _repo.deleteCustomer(id: c.id);
-                                      nav.pop();
-                                      await Future.delayed(Duration.zero);
-                                      _refresh();
-                                      messenger.showSnackBar(SnackBar(
-                                        content: Text('"$name" deleted'),
-                                        backgroundColor:
-                                            const Color(0xFFEF4444),
-                                        behavior: SnackBarBehavior.floating,
-                                      ));
+                                       if (ctx.mounted) Navigator.pop(ctx); // ← ctx, with mounted check
+                                    _refresh();
+
+                                      messenger.showSnackBar(
+                                        SnackBar(
+                                          content: Text('"$name" deleted'),
+                                          backgroundColor: const Color(
+                                            0xFFEF4444,
+                                          ),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
                                     } catch (e) {
                                       setLocal(() => deleting = false);
-                                      messenger.showSnackBar(SnackBar(
-                                        content: Text('Failed: $e'),
-                                        backgroundColor:
-                                            const Color(0xFFEF4444),
-                                        behavior: SnackBarBehavior.floating,
-                                      ));
+                                      messenger.showSnackBar(
+                                        SnackBar(
+                                          content: Text('Failed: $e'),
+                                          backgroundColor: const Color(
+                                            0xFFEF4444,
+                                          ),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
                                     }
                                   },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFEF4444),
                               foregroundColor: Colors.white,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 12),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                             child: deleting
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2, color: Colors.white))
-                                : const Text('Delete',
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Delete',
                                     style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600)),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
@@ -611,47 +705,51 @@ class _CustomersTableState extends State<CustomersTable> {
     IconData icon,
     String hint, {
     TextInputType keyboardType = TextInputType.text,
-  }) =>
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF475569))),
-          const SizedBox(height: 6),
-          TextFormField(
-            controller: ctrl,
-            keyboardType: keyboardType,
-            style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Required' : null,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle:
-                  const TextStyle(fontSize: 13, color: Color(0xFFCBD5E1)),
-              prefixIcon:
-                  Icon(icon, size: 16, color: const Color(0xFF94A3B8)),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              filled: true,
-              fillColor: const Color(0xFFF8FAFC),
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-              focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(
-                      color: Color(0xFF3B82F6), width: 1.5)),
-              errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFEF4444))),
-            ),
+  }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF475569),
+        ),
+      ),
+      const SizedBox(height: 6),
+      TextFormField(
+        controller: ctrl,
+        keyboardType: keyboardType,
+        style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
+        validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E1)),
+          prefixIcon: Icon(icon, size: 16, color: const Color(0xFF94A3B8)),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
           ),
-        ],
-      );
+          filled: true,
+          fillColor: const Color(0xFFF8FAFC),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFFEF4444)),
+          ),
+        ),
+      ),
+    ],
+  );
 }

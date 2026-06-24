@@ -18,8 +18,8 @@ class AnalyticsCard extends StatelessWidget {
     required this.label,
     required this.icon,
     this.target,
-    this.iconColor = const Color(0xFF00C853), // Standard green from image
-    this.iconBackgroundColor = const Color(0xFFE8F5E9), // Light green background
+    this.iconColor = const Color(0xFF00C853), 
+    this.iconBackgroundColor = const Color(0xFFE8F5E9), 
     this.trend,
     this.trendColor,
     this.isTrendPositive = true,

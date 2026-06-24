@@ -1,7 +1,7 @@
 import 'package:field_star/model/complaint_model.dart';
 import 'package:field_star/repository/technician_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+
 
 enum Priority { high, medium, low }
 
@@ -287,7 +287,7 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
                         // ── Rows ────────────────────────────────────
                         rows: rows.map((c) {
                           final priority = _mapPriority(c.priorityLevel);
-                          final status = _mapStatus(c.techstatus);
+                          final status = _mapStatus(c.complaintstatus);
 
                           return DataRow(
                             onSelectChanged: (selected) {
@@ -403,7 +403,7 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
 
                       _editField(
                         'Tickect ID:-',
-                        c.ticketId ?? 'N/A',
+                        c.ticketId ,
                         Icons.numbers,
                       ),
                       const SizedBox(height: 14),
@@ -442,47 +442,7 @@ class _RecentComplaintsTableState extends State<RecentComplaintsTable> {
                         c.technicianName ?? 'N/A',
                         Icons.location_on_outlined,
                       ),
-                      // Row(
-                      //   children: [
-                         
-                      //     const SizedBox(width: 12),
-                      //     Expanded(
-                      //       child: ElevatedButton(
-                      //          onPressed: saving
-                      //             ? null
-                      //             : () => Navigator.pop(ctx),
-                             
-                      //         style: ElevatedButton.styleFrom(
-                      //           backgroundColor: const Color(0xFF3B82F6),
-                      //           foregroundColor: Colors.white,
-                      //           padding: const EdgeInsets.symmetric(
-                      //             vertical: 12,
-                      //           ),
-                      //           elevation: 0,
-                      //           shape: RoundedRectangleBorder(
-                      //             borderRadius: BorderRadius.circular(8),
-                      //           ),
-                      //         ),
-                      //         child: saving
-                      //             ? const SizedBox(
-                      //                 width: 16,
-                      //                 height: 16,
-                      //                 child: CircularProgressIndicator(
-                      //                   strokeWidth: 2,
-                      //                   color: Colors.white,
-                      //                 ),
-                      //               )
-                      //             : const Text(
-                      //                 'OK',
-                      //                 style: TextStyle(
-                      //                   fontSize: 13,
-                      //                   fontWeight: FontWeight.w600,
-                      //                 ),
-                      //               ),
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
+                     
                     ],
                   ),
                 ),

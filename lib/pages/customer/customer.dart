@@ -1,5 +1,5 @@
 import 'package:field_star/component/customer_card.dart';
-import 'package:field_star/model/customer_model.dart';
+
 import 'package:field_star/navigation/primaryscaffold.dart';
 import 'package:field_star/pages/customer/customer_tabel.dart';
 import 'package:field_star/repository/technician_repository.dart';
@@ -18,14 +18,14 @@ class _CustomerState extends State<Customer> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _equipmentController = TextEditingController();
-  final TextEditingController _RevenueController = TextEditingController();
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   final TextEditingController _hotelName = TextEditingController();
   final _repository = TechnicianRepository();
 
-  bool _isLoading = false;
+ 
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   @override
@@ -87,14 +87,14 @@ class _CustomerState extends State<Customer> {
             ),
             const SizedBox(height: 15),
             FutureBuilder<Map<String, dynamic>>(
-              future: _repository.fetchcustomerstats(),
+              future: _repository.fetchCustomerStats(),
               builder: (context, snapshot) {
                 final totalCustomers =
                     ((snapshot.data?['totalCustomers']) as num?)?.toInt() ?? 0;
                 final thisMonthCount =
                     ((snapshot.data?['thisMonthCount']) as num?)?.toInt() ?? 0;
-                final totalEquipment =
-                    ((snapshot.data?['totalEquipment']) as num?)?.toInt() ?? 0;
+             final totalEquipment =
+    ((snapshot.data?['totalServiceEquipment']) as num?)?.toInt() ?? 0;
 
                 return Row(
                   children: [
@@ -118,7 +118,7 @@ class _CustomerState extends State<Customer> {
                         value:
                             snapshot.connectionState == ConnectionState.waiting
                             ? '...'
-                            : '$totalCustomers', // all customers are active
+                            : '$totalCustomers',
                         icon: Icons.trending_up_rounded,
                         iconColor: const Color(0xFF2E9E5B),
                         subText: totalCustomers == 0
@@ -355,6 +355,7 @@ class _CustomerState extends State<Customer> {
 
                                 if (ctx.mounted) {
                                   Navigator.pop(ctx);
+                                  
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(

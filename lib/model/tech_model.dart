@@ -6,7 +6,7 @@ class TechModel {
   final String location;
   final String specialization;
 
-  // Ensure these names match exactly
+ 
   TechModel({
     required this.fullName,
     required this.techId,
@@ -15,8 +15,6 @@ class TechModel {
     required this.specialization,
      this.id,
   });
-
-  // Convert a Map from Supabase into a Technician object
   factory TechModel.fromMap(Map<String, dynamic> map) {
     return TechModel(
       id: map['id']?.toString(),
@@ -28,7 +26,6 @@ class TechModel {
     );
   }
 
-  // Convert a Technician object into a Map for Supabase
   Map<String, dynamic> toMap() {
     return {
       'Full_name': fullName,

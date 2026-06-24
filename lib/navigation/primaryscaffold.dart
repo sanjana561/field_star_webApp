@@ -157,42 +157,7 @@ class _sidebarState extends State<sidebar> {
                   ),
                 ),
 
-                // Sign out button
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
-                  child: InkWell(
-                    // onTap: () => _handleSignOut(context),
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(
-                            Icons.logout_rounded,
-                            color: Color(0xFFFF6B6B),
-                            size: 20,
-                          ),
-                          SizedBox(width: 12),
-                          Text(
-                            "Sign Out",
-                            style: TextStyle(
-                              color: Color(0xFFFF6B6B),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+              
               ],
             ),
           ),

@@ -205,20 +205,28 @@ class TechnicianRepository {
 
   //========================Fetch customer==========
   Future<List<CustomerModel>> fetchcustomer() async {
-    final response = await Supabase.instance.client
-        .from('customer')
-        .select(
-          'id, cust_name, cust_phno, cust_location, cust_place, cust_hotelname, total_equipment, revenue_ytd, Raise_complaint(id)',
-        );
+  final response = await Supabase.instance.client
+      .from('customer')
+      .select(
+        'id, cust_name, cust_phno, cust_location, cust_place, cust_hotelname, total_equipment, revenue_ytd, Raise_complaint(id, service_required)',
+      );
 
-    return response.map<CustomerModel>((e) {
-      final complaints = e['Raise_complaint'] as List? ?? [];
-      return CustomerModel.fromMap({
-        ...e,
-        'complaint_count': complaints.length,
-      });
-    }).toList();
-  }
+  return response.map<CustomerModel>((e) {
+    final complaints = e['Raise_complaint'] as List? ?? [];
+
+    final equipmentCount = complaints
+        .map((r) => r['service_required']?.toString().trim() ?? '')
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .length;
+
+    return CustomerModel.fromMap({
+      ...e,
+      'complaint_count': complaints.length,
+      'equipment_count': equipmentCount,
+    });
+  }).toList();
+}
 
   //=======================Updated technician=======================
   Future<void> updatetechnician(TechModel technician) async {
@@ -264,27 +272,90 @@ class TechnicianRepository {
   }
 
   Future<int> getTodayComplaintCount(String technicianId) async {
-    final today = DateTime.now().toIso8601String().split('T').first;
+     final today = DateTime.now();
+   final todayStr =
+      '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
 
     final response = await _supabase
-        .from('Raise_complaint')
+       .from('service_ratings')
         .select('id')
         .eq('technician_id', technicianId)
-        .eq('Date', today)
-        .eq('tech_status', 'Pending');
+        .eq('service_date', todayStr);
 
     return response.length;
   }
 
-  Future<int> getActiveComplaintCount(String technicianId) async {
-    final response = await _supabase
+  // Future<int> getActiveComplaintCount(String technicianId) async {
+  //   final response = await _supabase
+  //       .from('Raise_complaint')
+  //       .select('id')
+  //       .eq('technician_id', technicianId)
+  //       .inFilter('tech_status', ['Assigned']);
+
+  //   return response.length;
+  // }
+  Future<Map<String, dynamic>> getActiveComplaintCount(String technicianId) async {
+  final today = DateTime.now();
+  final todayStr =
+      '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+  final results = await Future.wait([
+    // Active jobs
+    _supabase
         .from('Raise_complaint')
         .select('id')
         .eq('technician_id', technicianId)
-        .inFilter('tech_status', ['Assigned']);
+        .inFilter('tech_status', ['Assigned']),
 
-    return response.length;
-  }
+    // Jobs today from service_ratings
+    _supabase
+        .from('service_ratings')
+        .select('id')
+        .eq('technician_id', technicianId)
+        .eq('service_date', todayStr),
+
+    // Ratings
+    _supabase
+        .from('service_ratings')
+        .select('rating')
+        .eq('technician_id', technicianId)
+        .not('rating', 'is', null),
+  ]);
+
+  final activeJobs = (results[0] as List).length;
+  final jobsToday = (results[1] as List).length;
+
+  final ratings = results[2] as List;
+  final avgRating = ratings.isEmpty
+      ? 0.0
+      : ratings.fold<double>(
+              0, (sum, r) => sum + ((r['rating'] as num?)?.toDouble() ?? 0)) /
+          ratings.length;
+
+  return {
+    'activeJobs': activeJobs,
+    'jobsToday': jobsToday,
+    'rating': double.parse(avgRating.toStringAsFixed(1)),
+    'totalRatings': ratings.length,
+  };
+}
+Future<double> getratings(String technicianId) async {
+  final response = await _supabase
+      .from('service_ratings')
+      .select('rating')
+      .eq('technician_id', technicianId)
+      .not('rating', 'is', null);
+
+  final ratings = response as List;
+
+  if (ratings.isEmpty) return 0.0;
+
+  final avg = ratings.fold<double>(
+        0, (sum, r) => sum + ((r['rating'] as num?)?.toDouble() ?? 0),
+      ) / ratings.length;
+
+  return double.parse(avg.toStringAsFixed(1));
+}
 
   //=================================Get dashboard count==============================================
   Future<Map<String, dynamic>> fetchDashboardStats(String technicianId) async {
@@ -384,7 +455,7 @@ class TechnicianRepository {
     required String email,
     required String password,
   }) async {
-    // Step 1: Create auth user in Supabase Authentication
+ 
     final authResponse = await _supabase.auth.signUp(
       email: email,
       password: password,
@@ -396,9 +467,7 @@ class TechnicianRepository {
     }
 
     final userId = authResponse.user!.id;
-    print('Auth user created: $userId');
-
-    // Step 2: Insert technician row linked to the auth user
+   
     await _supabase.from('technician').insert({
       'Full_name': fullName,
       'TechID': techId,
@@ -411,16 +480,21 @@ class TechnicianRepository {
     print('Technician inserted with user_id: $userId');
   }
   //============================Fetch customer stats=========================
-Future<Map<String, dynamic>> fetchcustomerstats() async {
-  final raw = await _supabase
-      .from('customer')
-      .select('id, total_equipment, created_at');
+Future<Map<String, dynamic>> fetchCustomerStats() async {
+  final results = await Future.wait([
+    _supabase.from('customer').select('total_equipment, created_at'),
+    _supabase
+        .from('Raise_complaint')
+        .select('service_required')
+        .not('service_required', 'is', null),
+  ]);
 
-  final all = raw as List;
+  final all = results[0] as List;
+  final complaints = results[1] as List;
 
   final totalCustomers = all.length;
 
-  // customers added this month
+  
   final now = DateTime.now();
   final thisMonthStart = DateTime(now.year, now.month, 1);
   final thisMonthCount = all.where((c) {
@@ -428,16 +502,28 @@ Future<Map<String, dynamic>> fetchcustomerstats() async {
     return created != null && created.isAfter(thisMonthStart);
   }).length;
 
-  // total equipment across all customers
   final totalEquipment = all.fold<int>(
     0,
     (sum, c) => sum + ((c['total_equipment'] as num?)?.toInt() ?? 0),
   );
+  final totalServiceEquipment = complaints.length;
+
+ 
+ final distinctEquipmentTypes = complaints
+    .map((c) {
+      final raw = c['service_required']?.toString().trim() ?? '';
+      return raw.contains(' - ') ? raw.split(' - ').first.trim() : raw;
+    })
+    .where((s) => s.isNotEmpty)
+    .toSet();
 
   return {
     'totalCustomers': totalCustomers,
     'thisMonthCount': thisMonthCount,
     'totalEquipment': totalEquipment,
+    'totalServiceEquipment': totalServiceEquipment,      
+    'distinctEquipmentTypes': distinctEquipmentTypes,     
+    'distinctEquipmentCount': distinctEquipmentTypes.length,
   };
 }
 }
