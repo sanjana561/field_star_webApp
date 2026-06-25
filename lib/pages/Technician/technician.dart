@@ -33,7 +33,7 @@ class _TechnicianState extends State<Technician> {
   }
 
   void _refresh() => setState(() {
-    _techFuture = _repository.fetchTechnicians(); 
+    _techFuture = _repository.fetchTechnicians();
   });
   @override
   Widget build(BuildContext context) {
@@ -154,7 +154,7 @@ class _TechnicianState extends State<Technician> {
               Row(
                 children: [
                   Expanded(
-//=====================fetch technician========================================
+                    //=====================fetch technician========================================
                     child: FutureBuilder<List<TechModel>>(
                       future: _repository.fetchTechnicians(),
                       builder: (context, snapshot) {
@@ -188,15 +188,30 @@ class _TechnicianState extends State<Technician> {
                           itemCount: technicians.length,
                           itemBuilder: (context, index) {
                             final tech = technicians[index];
-//========================get active complaint count================================
+                            //========================get active complaint count================================
+                            if (tech.id == null || tech.id!.isEmpty) {
+                              return const SizedBox();
+                            }
+
                             return FutureBuilder<Map<String, dynamic>>(
                               future: _repository.getActiveComplaintCount(
                                 tech.id!,
                               ),
                               builder: (context, complaintSnapshot) {
-                                final activeJobs =(complaintSnapshot.data?['activeJobs'] as num?)?.toInt() ??  0;
-                                final jobsToday =(complaintSnapshot.data?['jobsToday'] as num?)?.toInt() ??    0;
-                                final rating =(complaintSnapshot.data?['rating'] as num?)?.toDouble() ?? 0.0;
+                                final activeJobs =
+                                    (complaintSnapshot.data?['activeJobs']
+                                            as num?)
+                                        ?.toInt() ??
+                                    0;
+                                final jobsToday =
+                                    (complaintSnapshot.data?['jobsToday']
+                                            as num?)
+                                        ?.toInt() ??
+                                    0;
+                                final rating =
+                                    (complaintSnapshot.data?['rating'] as num?)
+                                        ?.toDouble() ??
+                                    0.0;
                                 final isBusy = activeJobs > 0;
 
                                 return TechnicianCard(
@@ -212,7 +227,9 @@ class _TechnicianState extends State<Technician> {
                                   showAssignButton: !isBusy,
                                   rating: rating.toStringAsFixed(1),
                                   completionRate: 1.0,
-                                  specializations: [tech.specialization],
+                                  specializations: tech.specialization.isNotEmpty 
+    ? [tech.specialization] 
+    : ['N/A'], 
                                   onViewProfile: () {},
                                   onAssignJob: () {},
                                   onDelete: _refresh,
@@ -314,11 +331,10 @@ class _TechnicianState extends State<Technician> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-//=========================Add technician================================
+                    //=========================Add technician================================
                     onPressed: _isLoading
                         ? null
                         : () async {
-                            
                             if (_emailController.text.trim().isEmpty ||
                                 _passwordController.text.trim().isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -411,7 +427,7 @@ class _TechnicianState extends State<Technician> {
     );
   }
 
-//==============================Helper function=====================================
+  //==============================Helper function=====================================
   Widget _buildField(
     String label,
     String hint,
@@ -448,4 +464,21 @@ class _TechnicianState extends State<Technician> {
       ],
     );
   }
+
+  String getInitials(String name) {
+  if (name.trim().isEmpty) {
+    return '?';
+  }
+
+  final words = name.trim().split(' ').where((e) => e.isNotEmpty).toList();
+  if (words.isEmpty) return '?'; 
+
+  if (words.length >= 2) {
+    return '${words.first[0]}${words.last[0]}'.toUpperCase();
+  }
+
+  return words.first.length >= 2
+      ? words.first.substring(0, 2).toUpperCase()
+      : words.first.toUpperCase();
+}
 }

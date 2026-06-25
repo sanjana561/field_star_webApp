@@ -98,7 +98,7 @@ class _AssignTechnicianDialogState extends State<AssignTechnicianDialog> {
                       itemBuilder: (context, index) {
                         final tech = techModels[index];
                         final option = TechnicianOption(
-                          initials: tech.fullName.substring(0, 2).toUpperCase(),
+                    initials: getInitials(tech.fullName),
                           avatarColor: Colors.blue,
                           name: tech.fullName,
                           techId: tech.techId,
@@ -243,4 +243,21 @@ class _AssignTechnicianDialogState extends State<AssignTechnicianDialog> {
       ),
     );
   }
+
+  //===========================getInitials===========================
+ String getInitials(String name) {
+  final cleanName = name.trim();
+
+  if (cleanName.isEmpty) return '?';
+
+  final words = cleanName.split(' ');
+
+  if (words.length >= 2) {
+    return '${words[0][0]}${words[1][0]}'.toUpperCase();
+  }
+
+  return cleanName.length >= 2
+      ? cleanName.substring(0, 2).toUpperCase()
+      : cleanName[0].toUpperCase();
+}
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class sidebar extends StatefulWidget {
   final Widget child;
@@ -157,7 +158,40 @@ class _sidebarState extends State<sidebar> {
                   ),
                 ),
 
-              
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: InkWell(
+                    onTap: () => _handleSignOut(context),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(
+                            Icons.logout_rounded,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            "Sign Out",
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -168,16 +202,16 @@ class _sidebarState extends State<sidebar> {
     );
   }
 
-  // Future<void> _handleSignOut(BuildContext context) async {
-  //   try {
-  //     await Supabase.instance.client.auth.signOut();
-  //     if (!context.mounted) return;
-  //     context.go('/login');
-  //   } catch (e) {
-  //     if (!context.mounted) return;
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text("Error signing out: $e")),
-  //     );
-  //   }
-  // }
+  Future<void> _handleSignOut(BuildContext context) async {
+    try {
+      await Supabase.instance.client.auth.signOut();
+      if (!context.mounted) return;
+      context.go('/login');
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error signing out: $e")),
+      );
+    }
+  }
 }

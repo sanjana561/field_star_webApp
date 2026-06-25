@@ -264,8 +264,12 @@ class _ComplaintsTableState extends State<ComplaintsTable> {
           c.problem ?? '—',
           style: const TextStyle(
               fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF0F172A)),
-          overflow: TextOverflow.ellipsis,
+                softWrap: true,
+          
+        
         ),
+        
+        
         if (c.date != null) ...[
           const SizedBox(height: 3),
           Row(

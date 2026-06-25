@@ -1,7 +1,6 @@
 import 'package:field_star/model/complaint_model.dart';
 import 'package:field_star/model/customer_model.dart';
 import 'package:field_star/model/tech_model.dart';
-import 'package:field_star/pages/Technician/technician.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TechnicianRepository {

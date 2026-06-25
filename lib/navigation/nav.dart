@@ -2,35 +2,37 @@ import 'dart:async';
 import 'package:field_star/Analytics/analytics.dart';
 import 'package:field_star/navigation/shellPage.dart';
 import 'package:field_star/pages/Technician/technician.dart';
+import 'package:field_star/pages/auth/login.dart';
 import 'package:field_star/pages/billing&payments/billing&payments.dart';
 import 'package:field_star/pages/complaints/complaints.dart';
 import 'package:field_star/pages/customer/customer.dart';
 import 'package:field_star/pages/overview/overview.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-
-
+ final SupabaseClient _supabase = Supabase.instance.client;
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/Dashboard',
-  // refreshListenable: GoRouterRefreshStream(
-  //   supabase.auth.onAuthStateChange,
-  // ),
-  // redirect: (context, state) {
-  //   final session = supabase.auth.currentSession;
-  //   final loggedIn = session != null;
-  //   final isLogin = state.uri.path == '/login';
+ 
+  initialLocation: '/login',
+  refreshListenable: GoRouterRefreshStream(
+    _supabase.auth.onAuthStateChange,
+  ),
+  redirect: (context, state) {
+    final session = _supabase.auth.currentSession;
+    final loggedIn = session != null;
+    final isLogin = state.uri.path == '/login';
 
-  //   if (!loggedIn && !isLogin) return '/login';
+    if (!loggedIn && !isLogin) return '/login';
 
-  //   return null;
-  // },
+    return null;
+  },
   routes: [
-    // GoRoute(
-    //   path: '/login',
-    //   builder: (context, state) => const LoginPage(),
-    // ),
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const MobileLoging(),
+    ),
 
     ShellRoute(
       builder: (context, state, child) => ShellPage(
